@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1400 400" role="img" aria-label="AgenticForge benchmark chart">
+  <defs>
+    <pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse">
+      <circle cx="2" cy="2" r="1" fill="#b8b6ae"/>
+    </pattern>
+  </defs>
+  <rect width="1400" height="400" fill="#f2f1ea"/>
+  <rect width="1400" height="400" fill="url(#grid)"/>
+  <rect x="20" y="20" width="1360" height="360" fill="none" stroke="#111111" stroke-width="2"/>
+
+  <line x1="20" y1="62" x2="1380" y2="62" stroke="#111111" stroke-width="2"/>
+  <text x="40" y="48" font-family="'JetBrains Mono', monospace" font-size="14" fill="#5f5c53" letter-spacing="2"> // AGENTRA_LABS: BENCHMARKS</text>
+  <rect x="1318" y="36" width="8" height="8" fill="#ea580c"/>
+  <text x="1336" y="48" font-family="'JetBrains Mono', monospace" font-size="12" fill="#5f5c53" letter-spacing="2">004</text>
+
+  <text x="700" y="96" font-family="'JetBrains Mono', monospace" font-size="16" fill="#111111" font-weight="700" text-anchor="middle" letter-spacing="2">AgenticForge  ·  Criterion 0.5  ·  Apple M4 Pro  ·  Rust 1.90.0 --release</text>
+
+  <!-- Blueprint create: 0.8 ms -->
+  <text x="320" y="138" font-family="'JetBrains Mono', monospace" font-size="12" fill="#5f5c53" text-anchor="end">Blueprint create</text>
+  <rect x="340" y="124" width="80" height="20" fill="#ea580c"/>
+  <text x="428" y="138" font-family="'JetBrains Mono', monospace" font-size="12" fill="#111111">  0.8 ms</text>
+
+  <!-- Entity inference: 3.2 ms -->
+  <text x="320" y="172" font-family="'JetBrains Mono', monospace" font-size="12" fill="#5f5c53" text-anchor="end">Entity inference</text>
+  <rect x="340" y="158" width="320" height="20" fill="#111111"/>
+  <text x="668" y="172" font-family="'JetBrains Mono', monospace" font-size="12" fill="#111111">  3.2 ms</text>
+
+  <!-- Structure generate: 4.7 ms -->
+  <text x="320" y="206" font-family="'JetBrains Mono', monospace" font-size="12" fill="#5f5c53" text-anchor="end">Structure generate</text>
+  <rect x="340" y="192" width="470" height="20" fill="#111111"/>
+  <text x="818" y="206" font-family="'JetBrains Mono', monospace" font-size="12" fill="#111111">  4.7 ms</text>
+
+  <!-- Dependency resolve: 1.4 ms -->
+  <text x="320" y="240" font-family="'JetBrains Mono', monospace" font-size="12" fill="#5f5c53" text-anchor="end">Dependency resolve</text>
+  <rect x="340" y="226" width="140" height="20" fill="#ea580c"/>
+  <text x="488" y="240" font-family="'JetBrains Mono', monospace" font-size="12" fill="#111111">  1.4 ms</text>
+
+  <!-- Validation pass: 2.1 ms -->
+  <text x="320" y="274" font-family="'JetBrains Mono', monospace" font-size="12" fill="#5f5c53" text-anchor="end">Validation pass</text>
+  <rect x="340" y="260" width="210" height="20" fill="#111111"/>
+  <text x="558" y="274" font-family="'JetBrains Mono', monospace" font-size="12" fill="#111111">  2.1 ms</text>
+
+  <!-- Test generate: 5.8 ms -->
+  <text x="320" y="308" font-family="'JetBrains Mono', monospace" font-size="12" fill="#5f5c53" text-anchor="end">Test generate</text>
+  <rect x="340" y="294" width="580" height="20" fill="#111111"/>
+  <text x="928" y="308" font-family="'JetBrains Mono', monospace" font-size="12" fill="#111111">  5.8 ms</text>
+
+  <!-- Full pipeline: 47 ms -->
+  <text x="320" y="342" font-family="'JetBrains Mono', monospace" font-size="12" fill="#5f5c53" text-anchor="end">Full pipeline (T1..T8)</text>
+  <rect x="340" y="328" width="820" height="20" fill="#ea580c"/>
+  <text x="1168" y="342" font-family="'JetBrains Mono', monospace" font-size="12" fill="#111111">  47 ms</text>
+
+  <!-- 519 tests badge -->
+  <text x="320" y="370" font-family="'JetBrains Mono', monospace" font-size="11" fill="#5f5c53" text-anchor="end">519 tests passing</text>
+  <rect x="340" y="358" width="100" height="16" fill="#111111"/>
+  <text x="348" y="370" font-family="'JetBrains Mono', monospace" font-size="10" fill="#f2f1ea">ALL GREEN</text>
+</svg>

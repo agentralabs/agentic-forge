@@ -1,0 +1,18 @@
+[package]
+name = "agentic-forge-ffi"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+description = "FFI bindings for AgenticForge blueprint engine"
+homepage = "https://agentralabs.tech"
+
+[lib]
+name = "agentic_forge_ffi"
+path = "src/lib.rs"
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+agentic-forge-core = { workspace = true, default-features = false, features = ["format"] }
+serde_json = { workspace = true }

@@ -1,0 +1,32 @@
+{
+  "key": "forge",
+  "name": "AgenticForge",
+  "number": 11,
+  "role": "The Forge",
+  "tagline": "Blueprint Engine — Complete project architecture BEFORE code generation",
+  "version": "0.1.0",
+  "binary": "aforge",
+  "file_extension": ".forge",
+  "mcp_tool_count": 15,
+  "invention_count": 32,
+  "cli_command_count": 40,
+  "test_count": 313,
+  "crates": [
+    "agentic-forge-core",
+    "agentic-forge-mcp",
+    "agentic-forge-cli",
+    "agentic-forge-ffi"
+  ],
+  "bridges": [
+    "AegisBridge",
+    "EvolveBridge",
+    "VeritasBridge",
+    "MemoryBridge",
+    "IdentityBridge",
+    "TimeBridge",
+    "CognitionBridge",
+    "CommBridge",
+    "PlanningBridge",
+    "RealityBridge"
+  ]
+}

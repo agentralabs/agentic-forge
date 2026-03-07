@@ -1,0 +1,36 @@
+[workspace]
+resolver = "2"
+members = [
+    "crates/agentic-forge-core",
+    "crates/agentic-forge-mcp",
+    "crates/agentic-forge-cli",
+    "crates/agentic-forge-ffi",
+]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
+repository = "https://github.com/agentralabs/agentic-forge"
+authors = ["Agentra Labs <contact@agentralabs.tech>"]
+
+[workspace.dependencies]
+agentic-forge-core = { path = "crates/agentic-forge-core" }
+agentic-forge-mcp = { path = "crates/agentic-forge-mcp" }
+agentic-forge-cli = { path = "crates/agentic-forge-cli" }
+agentic-forge-ffi = { path = "crates/agentic-forge-ffi" }
+agentic-sdk = "0.2"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+tokio = { version = "1.35", features = ["full"] }
+async-trait = "0.1"
+clap = { version = "4.4", features = ["derive"] }
+blake3 = "1.5"
+uuid = { version = "1.6", features = ["v4", "v5", "serde"] }
+thiserror = "2"
+anyhow = "1.0"
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+chrono = { version = "0.4", features = ["serde"] }
+tempfile = "3.9"
+bincode = "1.3"

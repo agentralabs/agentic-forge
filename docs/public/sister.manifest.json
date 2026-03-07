@@ -1,0 +1,23 @@
+{
+  "key": "forge",
+  "name": "AgenticForge",
+  "version": "0.1.0",
+  "include_landing": true,
+  "page_ids": [
+    "quickstart",
+    "concepts",
+    "integration-guide",
+    "faq",
+    "benchmarks",
+    "api-reference",
+    "architecture",
+    "cli-reference",
+    "configuration",
+    "ffi-reference",
+    "mcp-tools",
+    "mcp-resources",
+    "mcp-prompts",
+    "troubleshooting"
+  ],
+  "slug_by_id": {}
+}

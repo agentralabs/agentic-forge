@@ -1,0 +1,26 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - run: cargo build --workspace --release
+      - run: cargo test --workspace --release
+      - name: Package release artifacts
+        run: |
+          VERSION=${GITHUB_REF#refs/tags/v}
+          tar -czf agentic-forge-${VERSION}-linux-x86_64.tar.gz -C target/release aforge agentic-forge-mcp
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: agentic-forge-*.tar.gz
