@@ -10,9 +10,9 @@ search_matches() {
     local pattern="$1"
     local path="$2"
     if command -v rg >/dev/null 2>&1; then
-        rg -n "$pattern" "$path" --glob '*.rs' --glob '!**/tests/**' || true
+        rg -nF "$pattern" "$path" --glob '*.rs' --glob '!**/tests/**' || true
     else
-        grep -rn "$pattern" "$path" --include='*.rs' 2>/dev/null || true
+        grep -rnF "$pattern" "$path" --include='*.rs' 2>/dev/null || true
     fi
 }
 
@@ -20,7 +20,7 @@ search_matches() {
 for crate in core mcp cli ffi; do
     SRC="$ROOT/crates/agentic-forge-$crate/src"
     if [ -d "$SRC" ]; then
-        MATCHES="$(search_matches '\.unwrap\(\)' "$SRC")"
+        MATCHES="$(search_matches '.unwrap()' "$SRC")"
         COUNT=$(printf '%s\n' "$MATCHES" | sed '/^$/d' | wc -l | tr -d ' ')
         if [ "$COUNT" -gt 0 ]; then
             echo "WARN: $crate has $COUNT .unwrap() in production code"
