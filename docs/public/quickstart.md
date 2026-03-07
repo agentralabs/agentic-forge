@@ -1,3 +1,8 @@
+---
+status: stable
+title: Quickstart
+---
+
 # Quickstart
 
 Get started with AgenticForge in under five minutes.

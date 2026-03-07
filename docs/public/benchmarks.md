@@ -1,3 +1,8 @@
+---
+status: stable
+title: Benchmarks
+---
+
 # Performance Benchmarks
 
 Benchmarks measured on Apple Silicon (M-series), single-threaded, release mode.

@@ -1,3 +1,8 @@
+---
+status: stable
+title: Faq
+---
+
 # Frequently Asked Questions
 
 ## What is AgenticForge?

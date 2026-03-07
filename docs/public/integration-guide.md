@@ -1,3 +1,8 @@
+---
+status: stable
+title: Integration Guide
+---
+
 # Integration Guide
 
 AgenticForge integrates with the Agentra Labs sister ecosystem through

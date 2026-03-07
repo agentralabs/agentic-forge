@@ -302,6 +302,7 @@ Profile variants:
 curl -fsSL https://agentralabs.tech/install/forge/desktop | bash    # Claude Desktop + Cursor
 curl -fsSL https://agentralabs.tech/install/forge/terminal | bash   # CLI only
 curl -fsSL https://agentralabs.tech/install/forge/server | bash     # Server mode with auth
+npm install @agenticamem/forge
 ```
 
 **Standalone guarantee:** AgenticForge operates fully standalone. No other sister, external service, or orchestrator is required.

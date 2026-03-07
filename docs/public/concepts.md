@@ -1,3 +1,8 @@
+---
+status: stable
+title: Concepts
+---
+
 # Core Concepts
 
 AgenticForge is a blueprint engine that designs complete project architecture

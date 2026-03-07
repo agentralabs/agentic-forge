@@ -1,3 +1,8 @@
+---
+status: stable
+title: Api Reference
+---
+
 # Rust API Reference
 
 ## Core Crate (`agentic-forge-core`)
