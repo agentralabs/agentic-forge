@@ -6,11 +6,22 @@ ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 
 echo "=== Runtime Hardening Check ==="
 
-# Check no .unwrap() in production code (excluding tests)
+search_matches() {
+    local pattern="$1"
+    local path="$2"
+    if command -v rg >/dev/null 2>&1; then
+        rg -n "$pattern" "$path" --glob '*.rs' --glob '!**/tests/**' || true
+    else
+        grep -rn "$pattern" "$path" --include='*.rs' 2>/dev/null || true
+    fi
+}
+
+# Check no .unwrap() in production code (excluding dedicated test files)
 for crate in core mcp cli ffi; do
     SRC="$ROOT/crates/agentic-forge-$crate/src"
     if [ -d "$SRC" ]; then
-        COUNT=$(grep -rn '\.unwrap()' "$SRC" --include='*.rs' | grep -v '#\[cfg(test)\]' | grep -v '#\[test\]' | grep -v 'mod tests' | wc -l | tr -d ' ')
+        MATCHES="$(search_matches '\.unwrap\(\)' "$SRC")"
+        COUNT=$(printf '%s\n' "$MATCHES" | sed '/^$/d' | wc -l | tr -d ' ')
         if [ "$COUNT" -gt 0 ]; then
             echo "WARN: $crate has $COUNT .unwrap() in production code"
             # Only fail for MCP crate (strict requirement)
@@ -25,7 +36,8 @@ done
 
 # Check no panic! in MCP code
 MCP_SRC="$ROOT/crates/agentic-forge-mcp/src"
-PANIC_COUNT=$(grep -rn 'panic!' "$MCP_SRC" --include='*.rs' | grep -v '#\[test\]' | grep -v 'mod tests' | wc -l | tr -d ' ')
+PANIC_MATCHES="$(search_matches 'panic!' "$MCP_SRC")"
+PANIC_COUNT=$(printf '%s\n' "$PANIC_MATCHES" | sed '/^$/d' | wc -l | tr -d ' ')
 if [ "$PANIC_COUNT" -gt 0 ]; then
     echo "FAIL: Found $PANIC_COUNT panic! calls in MCP production code"
     FAIL=1
@@ -42,7 +54,12 @@ else
 fi
 
 # Check unsafe blocks are documented
-UNSAFE_COUNT=$(grep -rn 'unsafe {' "$ROOT/crates/" --include='*.rs' | wc -l | tr -d ' ')
+if command -v rg >/dev/null 2>&1; then
+    UNSAFE_MATCHES="$(rg -n 'unsafe \{' "$ROOT/crates/" --glob '*.rs' || true)"
+else
+    UNSAFE_MATCHES="$(grep -rn 'unsafe {' "$ROOT/crates/" --include='*.rs' 2>/dev/null || true)"
+fi
+UNSAFE_COUNT=$(printf '%s\n' "$UNSAFE_MATCHES" | sed '/^$/d' | wc -l | tr -d ' ')
 echo "INFO: $UNSAFE_COUNT unsafe blocks found across workspace"
 
 if [ $FAIL -ne 0 ]; then
