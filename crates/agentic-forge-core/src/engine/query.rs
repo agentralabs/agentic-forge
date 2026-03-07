@@ -29,10 +29,18 @@ impl<'a> QueryEngine<'a> {
     }
 
     pub fn search_blueprints(&self, query: &str) -> Vec<&Blueprint> {
-        self.engine.store.list().into_iter().filter(|bp| {
-            bp.name.to_lowercase().contains(&query.to_lowercase())
-                || bp.description.to_lowercase().contains(&query.to_lowercase())
-        }).collect()
+        self.engine
+            .store
+            .list()
+            .into_iter()
+            .filter(|bp| {
+                bp.name.to_lowercase().contains(&query.to_lowercase())
+                    || bp
+                        .description
+                        .to_lowercase()
+                        .contains(&query.to_lowercase())
+            })
+            .collect()
     }
 
     pub fn blueprint_count(&self) -> usize {
@@ -47,7 +55,9 @@ impl<'a> QueryEngine<'a> {
 
     pub fn get_entity(&self, bp_id: &BlueprintId, entity_id: &EntityId) -> ForgeResult<&Entity> {
         let bp = self.engine.store.load(bp_id)?;
-        bp.entities.iter().find(|e| e.id == *entity_id)
+        bp.entities
+            .iter()
+            .find(|e| e.id == *entity_id)
             .ok_or_else(|| ForgeError::EntityNotFound(entity_id.to_string()))
     }
 
@@ -69,10 +79,14 @@ impl<'a> QueryEngine<'a> {
 
     pub fn search_entities(&self, bp_id: &BlueprintId, query: &str) -> ForgeResult<Vec<&Entity>> {
         let bp = self.engine.store.load(bp_id)?;
-        Ok(bp.entities.iter().filter(|e| {
-            e.name.to_lowercase().contains(&query.to_lowercase())
-                || e.description.to_lowercase().contains(&query.to_lowercase())
-        }).collect())
+        Ok(bp
+            .entities
+            .iter()
+            .filter(|e| {
+                e.name.to_lowercase().contains(&query.to_lowercase())
+                    || e.description.to_lowercase().contains(&query.to_lowercase())
+            })
+            .collect())
     }
 
     pub fn list_aggregate_roots(&self, bp_id: &BlueprintId) -> ForgeResult<Vec<&Entity>> {
@@ -84,7 +98,9 @@ impl<'a> QueryEngine<'a> {
 
     pub fn get_file(&self, bp_id: &BlueprintId, file_id: &FileId) -> ForgeResult<&FileBlueprint> {
         let bp = self.engine.store.load(bp_id)?;
-        bp.files.iter().find(|f| f.id == *file_id)
+        bp.files
+            .iter()
+            .find(|f| f.id == *file_id)
             .ok_or_else(|| ForgeError::FileNotFound(file_id.to_string()))
     }
 
@@ -99,7 +115,11 @@ impl<'a> QueryEngine<'a> {
         Ok(&bp.files)
     }
 
-    pub fn list_files_by_type(&self, bp_id: &BlueprintId, ft: FileType) -> ForgeResult<Vec<&FileBlueprint>> {
+    pub fn list_files_by_type(
+        &self,
+        bp_id: &BlueprintId,
+        ft: FileType,
+    ) -> ForgeResult<Vec<&FileBlueprint>> {
         let bp = self.engine.store.load(bp_id)?;
         Ok(bp.files.iter().filter(|f| f.file_type == ft).collect())
     }
@@ -111,13 +131,23 @@ impl<'a> QueryEngine<'a> {
 
     // Dependency queries
 
-    pub fn get_dependency(&self, bp_id: &BlueprintId, dep_id: &DependencyId) -> ForgeResult<&Dependency> {
+    pub fn get_dependency(
+        &self,
+        bp_id: &BlueprintId,
+        dep_id: &DependencyId,
+    ) -> ForgeResult<&Dependency> {
         let bp = self.engine.store.load(bp_id)?;
-        bp.dependencies.iter().find(|d| d.id == *dep_id)
+        bp.dependencies
+            .iter()
+            .find(|d| d.id == *dep_id)
             .ok_or_else(|| ForgeError::DependencyNotFound(dep_id.to_string()))
     }
 
-    pub fn get_dependency_by_name(&self, bp_id: &BlueprintId, name: &str) -> ForgeResult<&Dependency> {
+    pub fn get_dependency_by_name(
+        &self,
+        bp_id: &BlueprintId,
+        name: &str,
+    ) -> ForgeResult<&Dependency> {
         let bp = self.engine.store.load(bp_id)?;
         bp.find_dependency(name)
             .ok_or_else(|| ForgeError::DependencyNotFound(name.to_string()))
@@ -128,9 +158,17 @@ impl<'a> QueryEngine<'a> {
         Ok(&bp.dependencies)
     }
 
-    pub fn list_dependencies_by_type(&self, bp_id: &BlueprintId, dt: DependencyType) -> ForgeResult<Vec<&Dependency>> {
+    pub fn list_dependencies_by_type(
+        &self,
+        bp_id: &BlueprintId,
+        dt: DependencyType,
+    ) -> ForgeResult<Vec<&Dependency>> {
         let bp = self.engine.store.load(bp_id)?;
-        Ok(bp.dependencies.iter().filter(|d| d.dep_type == dt).collect())
+        Ok(bp
+            .dependencies
+            .iter()
+            .filter(|d| d.dep_type == dt)
+            .collect())
     }
 
     pub fn dependency_count(&self, bp_id: &BlueprintId) -> ForgeResult<usize> {
@@ -142,7 +180,9 @@ impl<'a> QueryEngine<'a> {
 
     pub fn get_test_case(&self, bp_id: &BlueprintId, tc_id: &TestCaseId) -> ForgeResult<&TestCase> {
         let bp = self.engine.store.load(bp_id)?;
-        bp.test_cases.iter().find(|t| t.id == *tc_id)
+        bp.test_cases
+            .iter()
+            .find(|t| t.id == *tc_id)
             .ok_or_else(|| ForgeError::TestCaseNotFound(tc_id.to_string()))
     }
 
@@ -151,7 +191,11 @@ impl<'a> QueryEngine<'a> {
         Ok(&bp.test_cases)
     }
 
-    pub fn list_tests_by_type(&self, bp_id: &BlueprintId, tt: TestType) -> ForgeResult<Vec<&TestCase>> {
+    pub fn list_tests_by_type(
+        &self,
+        bp_id: &BlueprintId,
+        tt: TestType,
+    ) -> ForgeResult<Vec<&TestCase>> {
         let bp = self.engine.store.load(bp_id)?;
         Ok(bp.test_cases.iter().filter(|t| t.test_type == tt).collect())
     }
@@ -168,15 +212,24 @@ impl<'a> QueryEngine<'a> {
         Ok(&bp.type_definitions)
     }
 
-    pub fn get_type_definition(&self, bp_id: &BlueprintId, name: &str) -> ForgeResult<&TypeDefinition> {
+    pub fn get_type_definition(
+        &self,
+        bp_id: &BlueprintId,
+        name: &str,
+    ) -> ForgeResult<&TypeDefinition> {
         let bp = self.engine.store.load(bp_id)?;
-        bp.type_definitions.iter().find(|t| t.name == name)
+        bp.type_definitions
+            .iter()
+            .find(|t| t.name == name)
             .ok_or_else(|| ForgeError::MissingField(name.to_string()))
     }
 
     // Function queries
 
-    pub fn list_function_blueprints(&self, bp_id: &BlueprintId) -> ForgeResult<&[FunctionBlueprint]> {
+    pub fn list_function_blueprints(
+        &self,
+        bp_id: &BlueprintId,
+    ) -> ForgeResult<&[FunctionBlueprint]> {
         let bp = self.engine.store.load(bp_id)?;
         Ok(&bp.function_blueprints)
     }
@@ -288,19 +341,33 @@ mod tests {
 
     fn setup() -> (ForgeEngine, BlueprintId) {
         let mut engine = ForgeEngine::new();
-        let id = engine.create_blueprint("Test", "Test blueprint", Domain::Api).unwrap();
+        let id = engine
+            .create_blueprint("Test", "Test blueprint", Domain::Api)
+            .unwrap();
         // Add some entities, files, deps, tests
         {
             let mut w = engine.writer();
-            w.add_entity(&id, Entity::new("User", "A user entity")).unwrap();
-            w.add_entity(&id, Entity::new("Post", "A post entity")).unwrap();
-            w.add_file(&id, FileBlueprint::new("src/main.rs", FileType::Source)).unwrap();
-            w.add_file(&id, FileBlueprint::new("src/models.rs", FileType::Source)).unwrap();
-            w.add_file(&id, FileBlueprint::new("tests/test.rs", FileType::Test)).unwrap();
-            w.add_dependency(&id, Dependency::new("serde", "1.0")).unwrap();
-            w.add_dependency(&id, Dependency::new("tokio", "1.35")).unwrap();
-            w.add_test_case(&id, TestCase::new("test_create", TestType::Unit, "User::create")).unwrap();
-            w.add_test_case(&id, TestCase::new("test_e2e", TestType::Integration, "api")).unwrap();
+            w.add_entity(&id, Entity::new("User", "A user entity"))
+                .unwrap();
+            w.add_entity(&id, Entity::new("Post", "A post entity"))
+                .unwrap();
+            w.add_file(&id, FileBlueprint::new("src/main.rs", FileType::Source))
+                .unwrap();
+            w.add_file(&id, FileBlueprint::new("src/models.rs", FileType::Source))
+                .unwrap();
+            w.add_file(&id, FileBlueprint::new("tests/test.rs", FileType::Test))
+                .unwrap();
+            w.add_dependency(&id, Dependency::new("serde", "1.0"))
+                .unwrap();
+            w.add_dependency(&id, Dependency::new("tokio", "1.35"))
+                .unwrap();
+            w.add_test_case(
+                &id,
+                TestCase::new("test_create", TestType::Unit, "User::create"),
+            )
+            .unwrap();
+            w.add_test_case(&id, TestCase::new("test_e2e", TestType::Integration, "api"))
+                .unwrap();
         }
         (engine, id)
     }
@@ -379,7 +446,10 @@ mod tests {
     fn test_list_files_by_type() {
         let (engine, id) = setup();
         let r = engine.reader();
-        assert_eq!(r.list_files_by_type(&id, FileType::Source).unwrap().len(), 2);
+        assert_eq!(
+            r.list_files_by_type(&id, FileType::Source).unwrap().len(),
+            2
+        );
         assert_eq!(r.list_files_by_type(&id, FileType::Test).unwrap().len(), 1);
     }
 
@@ -432,7 +502,12 @@ mod tests {
         let (engine, id) = setup();
         let r = engine.reader();
         assert_eq!(r.list_tests_by_type(&id, TestType::Unit).unwrap().len(), 1);
-        assert_eq!(r.list_tests_by_type(&id, TestType::Integration).unwrap().len(), 1);
+        assert_eq!(
+            r.list_tests_by_type(&id, TestType::Integration)
+                .unwrap()
+                .len(),
+            1
+        );
     }
 
     #[test]

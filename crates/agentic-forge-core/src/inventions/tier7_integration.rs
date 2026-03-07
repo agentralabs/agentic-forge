@@ -34,8 +34,12 @@ impl WiringDiagramBuilder {
         wirings
     }
 
-    pub fn name() -> &'static str { "WiringDiagramBuilder" }
-    pub fn tier() -> u8 { 7 }
+    pub fn name() -> &'static str {
+        "WiringDiagramBuilder"
+    }
+    pub fn tier() -> u8 {
+        7
+    }
 }
 
 pub struct DataFlowSpecifier;
@@ -71,8 +75,12 @@ impl DataFlowSpecifier {
         flows
     }
 
-    pub fn name() -> &'static str { "DataFlowSpecifier" }
-    pub fn tier() -> u8 { 7 }
+    pub fn name() -> &'static str {
+        "DataFlowSpecifier"
+    }
+    pub fn tier() -> u8 {
+        7
+    }
 }
 
 pub struct InitSequencer;
@@ -82,30 +90,98 @@ impl InitSequencer {
         let mut steps = Vec::new();
         let mut order = 0;
 
-        steps.push(InitStep { order: { order += 1; order }, name: "config".into(), description: "Load configuration".into() });
-        steps.push(InitStep { order: { order += 1; order }, name: "logging".into(), description: "Initialize logging/tracing".into() });
+        steps.push(InitStep {
+            order: {
+                order += 1;
+                order
+            },
+            name: "config".into(),
+            description: "Load configuration".into(),
+        });
+        steps.push(InitStep {
+            order: {
+                order += 1;
+                order
+            },
+            name: "logging".into(),
+            description: "Initialize logging/tracing".into(),
+        });
 
-        if blueprint.dependencies.iter().any(|d| d.name.contains("postgres") || d.name.contains("sqlx")) {
-            steps.push(InitStep { order: { order += 1; order }, name: "database".into(), description: "Connect to database".into() });
-            steps.push(InitStep { order: { order += 1; order }, name: "migrations".into(), description: "Run database migrations".into() });
+        if blueprint
+            .dependencies
+            .iter()
+            .any(|d| d.name.contains("postgres") || d.name.contains("sqlx"))
+        {
+            steps.push(InitStep {
+                order: {
+                    order += 1;
+                    order
+                },
+                name: "database".into(),
+                description: "Connect to database".into(),
+            });
+            steps.push(InitStep {
+                order: {
+                    order += 1;
+                    order
+                },
+                name: "migrations".into(),
+                description: "Run database migrations".into(),
+            });
         }
 
         for entity in &blueprint.entities {
-            steps.push(InitStep { order: { order += 1; order }, name: format!("{}_repo", entity.name.to_lowercase()), description: format!("Initialize {} repository", entity.name) });
-            steps.push(InitStep { order: { order += 1; order }, name: format!("{}_service", entity.name.to_lowercase()), description: format!("Initialize {} service", entity.name) });
+            steps.push(InitStep {
+                order: {
+                    order += 1;
+                    order
+                },
+                name: format!("{}_repo", entity.name.to_lowercase()),
+                description: format!("Initialize {} repository", entity.name),
+            });
+            steps.push(InitStep {
+                order: {
+                    order += 1;
+                    order
+                },
+                name: format!("{}_service", entity.name.to_lowercase()),
+                description: format!("Initialize {} service", entity.name),
+            });
         }
 
-        if blueprint.dependencies.iter().any(|d| d.name == "axum" || d.name == "actix-web") {
-            steps.push(InitStep { order: { order += 1; order }, name: "router".into(), description: "Configure routes".into() });
-            steps.push(InitStep { order: { order += 1; order }, name: "server".into(), description: "Start HTTP server".into() });
+        if blueprint
+            .dependencies
+            .iter()
+            .any(|d| d.name == "axum" || d.name == "actix-web")
+        {
+            steps.push(InitStep {
+                order: {
+                    order += 1;
+                    order
+                },
+                name: "router".into(),
+                description: "Configure routes".into(),
+            });
+            steps.push(InitStep {
+                order: {
+                    order += 1;
+                    order
+                },
+                name: "server".into(),
+                description: "Start HTTP server".into(),
+            });
         }
         let _ = order;
 
         steps
     }
 
-    pub fn name() -> &'static str { "InitSequencer" }
-    pub fn tier() -> u8 { 7 }
+    pub fn name() -> &'static str {
+        "InitSequencer"
+    }
+    pub fn tier() -> u8 {
+        7
+    }
 }
 
 pub struct ShutdownSequencer;
@@ -115,23 +191,67 @@ impl ShutdownSequencer {
         let mut steps = Vec::new();
         let mut order = 0;
 
-        if blueprint.dependencies.iter().any(|d| d.name == "axum" || d.name == "actix-web") {
-            steps.push(ShutdownStep { order: { order += 1; order }, name: "server".into(), description: "Stop accepting connections".into(), timeout_ms: 5000 });
-            steps.push(ShutdownStep { order: { order += 1; order }, name: "drain_requests".into(), description: "Drain in-flight requests".into(), timeout_ms: 30000 });
+        if blueprint
+            .dependencies
+            .iter()
+            .any(|d| d.name == "axum" || d.name == "actix-web")
+        {
+            steps.push(ShutdownStep {
+                order: {
+                    order += 1;
+                    order
+                },
+                name: "server".into(),
+                description: "Stop accepting connections".into(),
+                timeout_ms: 5000,
+            });
+            steps.push(ShutdownStep {
+                order: {
+                    order += 1;
+                    order
+                },
+                name: "drain_requests".into(),
+                description: "Drain in-flight requests".into(),
+                timeout_ms: 30000,
+            });
         }
 
-        if blueprint.dependencies.iter().any(|d| d.name.contains("postgres") || d.name.contains("sqlx")) {
-            steps.push(ShutdownStep { order: { order += 1; order }, name: "database".into(), description: "Close database connections".into(), timeout_ms: 5000 });
+        if blueprint
+            .dependencies
+            .iter()
+            .any(|d| d.name.contains("postgres") || d.name.contains("sqlx"))
+        {
+            steps.push(ShutdownStep {
+                order: {
+                    order += 1;
+                    order
+                },
+                name: "database".into(),
+                description: "Close database connections".into(),
+                timeout_ms: 5000,
+            });
         }
 
-        steps.push(ShutdownStep { order: { order += 1; order }, name: "flush_logs".into(), description: "Flush log buffers".into(), timeout_ms: 2000 });
+        steps.push(ShutdownStep {
+            order: {
+                order += 1;
+                order
+            },
+            name: "flush_logs".into(),
+            description: "Flush log buffers".into(),
+            timeout_ms: 2000,
+        });
         let _ = order;
 
         steps
     }
 
-    pub fn name() -> &'static str { "ShutdownSequencer" }
-    pub fn tier() -> u8 { 7 }
+    pub fn name() -> &'static str {
+        "ShutdownSequencer"
+    }
+    pub fn tier() -> u8 {
+        7
+    }
 }
 
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
@@ -157,9 +277,12 @@ mod tests {
     #[test]
     fn test_wiring_diagram_builder() {
         let entities = vec![Entity::new("User", "A user"), Entity::new("Post", "A post")];
-        let layers = vec![
-            ArchitectureLayer { name: "application".into(), description: "".into(), modules: vec![], allowed_dependencies: vec!["domain".into()] },
-        ];
+        let layers = vec![ArchitectureLayer {
+            name: "application".into(),
+            description: "".into(),
+            modules: vec![],
+            allowed_dependencies: vec!["domain".into()],
+        }];
         let wirings = WiringDiagramBuilder::build(&entities, &layers);
         assert!(wirings.len() >= 3);
         assert!(wirings.iter().any(|w| w.source == "UserService"));

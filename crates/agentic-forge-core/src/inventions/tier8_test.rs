@@ -11,30 +11,62 @@ impl TestCaseGenerator {
         let name = &entity.name;
         let lower = name.to_lowercase();
 
-        tests.push(TestCase::new(&format!("test_create_{}", lower), TestType::Unit, &format!("{}::create", name)));
-        tests.push(TestCase::new(&format!("test_read_{}", lower), TestType::Unit, &format!("{}::read", name)));
-        tests.push(TestCase::new(&format!("test_update_{}", lower), TestType::Unit, &format!("{}::update", name)));
-        tests.push(TestCase::new(&format!("test_delete_{}", lower), TestType::Unit, &format!("{}::delete", name)));
-        tests.push(TestCase::new(&format!("test_list_{}s", lower), TestType::Unit, &format!("{}::list", name)));
+        tests.push(TestCase::new(
+            format!("test_create_{}", lower),
+            TestType::Unit,
+            format!("{}::create", name),
+        ));
+        tests.push(TestCase::new(
+            format!("test_read_{}", lower),
+            TestType::Unit,
+            format!("{}::read", name),
+        ));
+        tests.push(TestCase::new(
+            format!("test_update_{}", lower),
+            TestType::Unit,
+            format!("{}::update", name),
+        ));
+        tests.push(TestCase::new(
+            format!("test_delete_{}", lower),
+            TestType::Unit,
+            format!("{}::delete", name),
+        ));
+        tests.push(TestCase::new(
+            format!("test_list_{}s", lower),
+            TestType::Unit,
+            format!("{}::list", name),
+        ));
 
         for field in &entity.fields {
             if field.required {
                 tests.push(TestCase::new(
-                    &format!("test_{}_requires_{}", lower, field.name),
+                    format!("test_{}_requires_{}", lower, field.name),
                     TestType::Unit,
-                    &format!("{}::validation", name),
+                    format!("{}::validation", name),
                 ));
             }
         }
 
-        tests.push(TestCase::new(&format!("test_{}_not_found", lower), TestType::Unit, &format!("{}::error", name)));
-        tests.push(TestCase::new(&format!("test_{}_serialization", lower), TestType::Unit, &format!("{}::serde", name)));
+        tests.push(TestCase::new(
+            format!("test_{}_not_found", lower),
+            TestType::Unit,
+            format!("{}::error", name),
+        ));
+        tests.push(TestCase::new(
+            format!("test_{}_serialization", lower),
+            TestType::Unit,
+            format!("{}::serde", name),
+        ));
 
         tests
     }
 
-    pub fn name() -> &'static str { "TestCaseGenerator" }
-    pub fn tier() -> u8 { 8 }
+    pub fn name() -> &'static str {
+        "TestCaseGenerator"
+    }
+    pub fn tier() -> u8 {
+        8
+    }
 }
 
 pub struct TestFixtureDesigner;
@@ -59,7 +91,11 @@ impl TestFixtureDesigner {
             setup_code: format!("(0..10).map(|_| make_{}()).collect()", lower),
         });
 
-        if entity.relationships.iter().any(|r| matches!(r.relationship_type, RelationshipType::HasMany)) {
+        if entity
+            .relationships
+            .iter()
+            .any(|r| matches!(r.relationship_type, RelationshipType::HasMany))
+        {
             fixtures.push(TestFixture {
                 name: format!("make_{}_with_children", lower),
                 fixture_type: FixtureType::Graph,
@@ -71,8 +107,12 @@ impl TestFixtureDesigner {
         fixtures
     }
 
-    pub fn name() -> &'static str { "TestFixtureDesigner" }
-    pub fn tier() -> u8 { 8 }
+    pub fn name() -> &'static str {
+        "TestFixtureDesigner"
+    }
+    pub fn tier() -> u8 {
+        8
+    }
 }
 
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
@@ -113,14 +153,27 @@ impl IntegrationTestPlanner {
         }
 
         // Cross-entity tests
-        for rel in entities.iter().flat_map(|e| e.relationships.iter().map(move |r| (e, r))) {
+        for rel in entities
+            .iter()
+            .flat_map(|e| e.relationships.iter().map(move |r| (e, r)))
+        {
             let (entity, relationship) = rel;
             plans.push(IntegrationTestPlan {
-                name: format!("{}_{}_relationship", entity.name.to_lowercase(), relationship.target_entity.to_lowercase()),
-                description: format!("{} to {} relationship test", entity.name, relationship.target_entity),
+                name: format!(
+                    "{}_{}_relationship",
+                    entity.name.to_lowercase(),
+                    relationship.target_entity.to_lowercase()
+                ),
+                description: format!(
+                    "{} to {} relationship test",
+                    entity.name, relationship.target_entity
+                ),
                 steps: vec![
                     format!("Create {}", relationship.target_entity),
-                    format!("Create {} linked to {}", entity.name, relationship.target_entity),
+                    format!(
+                        "Create {} linked to {}",
+                        entity.name, relationship.target_entity
+                    ),
                     format!("Verify relationship exists"),
                     format!("Delete {} and verify cascade", relationship.target_entity),
                 ],
@@ -131,8 +184,12 @@ impl IntegrationTestPlanner {
         plans
     }
 
-    pub fn name() -> &'static str { "IntegrationTestPlanner" }
-    pub fn tier() -> u8 { 8 }
+    pub fn name() -> &'static str {
+        "IntegrationTestPlanner"
+    }
+    pub fn tier() -> u8 {
+        8
+    }
 }
 
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
@@ -154,10 +211,22 @@ impl MockSpecifier {
                 name: format!("Mock{}Repository", entity.name),
                 target_trait: format!("{}Repository", entity.name),
                 methods: vec![
-                    MockMethod { name: "find_by_id".into(), return_behavior: format!("Returns Some({}) or None", entity.name) },
-                    MockMethod { name: "save".into(), return_behavior: "Returns Ok(())".into() },
-                    MockMethod { name: "delete".into(), return_behavior: "Returns Ok(())".into() },
-                    MockMethod { name: "list".into(), return_behavior: format!("Returns Vec<{}>", entity.name) },
+                    MockMethod {
+                        name: "find_by_id".into(),
+                        return_behavior: format!("Returns Some({}) or None", entity.name),
+                    },
+                    MockMethod {
+                        name: "save".into(),
+                        return_behavior: "Returns Ok(())".into(),
+                    },
+                    MockMethod {
+                        name: "delete".into(),
+                        return_behavior: "Returns Ok(())".into(),
+                    },
+                    MockMethod {
+                        name: "list".into(),
+                        return_behavior: format!("Returns Vec<{}>", entity.name),
+                    },
                 ],
             });
         }
@@ -165,8 +234,12 @@ impl MockSpecifier {
         mocks
     }
 
-    pub fn name() -> &'static str { "MockSpecifier" }
-    pub fn tier() -> u8 { 8 }
+    pub fn name() -> &'static str {
+        "MockSpecifier"
+    }
+    pub fn tier() -> u8 {
+        8
+    }
 }
 
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
@@ -199,7 +272,9 @@ mod tests {
     #[test]
     fn test_test_case_generator_with_fields() {
         let mut entity = Entity::new("User", "A user");
-        entity.fields.push(EntityField::new("email", FieldType::String));
+        entity
+            .fields
+            .push(EntityField::new("email", FieldType::String));
         let tests = TestCaseGenerator::generate(&entity);
         assert!(tests.iter().any(|t| t.name == "test_user_requires_email"));
     }
@@ -222,7 +297,9 @@ mod tests {
             description: "".into(),
         });
         let fixtures = TestFixtureDesigner::design(&entity);
-        assert!(fixtures.iter().any(|f| f.fixture_type == FixtureType::Graph));
+        assert!(fixtures
+            .iter()
+            .any(|f| f.fixture_type == FixtureType::Graph));
     }
 
     #[test]

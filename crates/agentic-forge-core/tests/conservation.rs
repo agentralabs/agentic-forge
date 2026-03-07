@@ -3,12 +3,12 @@
 
 use agentic_forge_core::cache::Cache;
 use agentic_forge_core::cache::CacheInvalidator;
-use agentic_forge_core::metrics::tokens::{Layer, TokenMetrics, ResponseMetrics};
-use agentic_forge_core::metrics::audit::{AuditLog, AuditEntry};
+use agentic_forge_core::metrics::audit::{AuditEntry, AuditLog};
 use agentic_forge_core::metrics::conservation::{generate_report, ConservationVerdict};
-use agentic_forge_core::query::intent::ExtractionIntent;
-use agentic_forge_core::query::delta::{VersionedState, ChangeType};
+use agentic_forge_core::metrics::tokens::{Layer, ResponseMetrics, TokenMetrics};
 use agentic_forge_core::query::budget::TokenBudget;
+use agentic_forge_core::query::delta::{ChangeType, VersionedState};
+use agentic_forge_core::query::intent::ExtractionIntent;
 use agentic_forge_core::query::pagination::CursorPage;
 use std::time::Duration;
 
@@ -35,7 +35,10 @@ fn test_second_query_cheaper_than_first() {
 
     let second_cost = metrics.total_tokens() - first_total;
     assert_eq!(second_cost, 0, "Second query must be 0 tokens (cache hit)");
-    assert!(metrics.total_savings() >= 500, "Must save >=500 tokens on cache hit");
+    assert!(
+        metrics.total_savings() >= 500,
+        "Must save >=500 tokens on cache hit"
+    );
 }
 
 // ── RULE 9: Unchanged state MUST be free to query ────────────────────
@@ -60,12 +63,20 @@ fn test_unchanged_state_free() {
 fn test_scoped_query_10x_cheaper() {
     let ids_cost = ExtractionIntent::IdsOnly.estimated_tokens();
     let full_cost = ExtractionIntent::Full.estimated_tokens();
-    assert!(ids_cost * 10 <= full_cost,
-        "IdsOnly ({}) must be >=10x cheaper than Full ({})", ids_cost, full_cost);
+    assert!(
+        ids_cost * 10 <= full_cost,
+        "IdsOnly ({}) must be >=10x cheaper than Full ({})",
+        ids_cost,
+        full_cost
+    );
 
     let exists_cost = ExtractionIntent::Exists.estimated_tokens();
-    assert!(exists_cost * 100 <= full_cost,
-        "Exists ({}) must be >=100x cheaper than Full ({})", exists_cost, full_cost);
+    assert!(
+        exists_cost * 100 <= full_cost,
+        "Exists ({}) must be >=100x cheaper than Full ({})",
+        exists_cost,
+        full_cost
+    );
 }
 
 // ── RULE 4: Delta retrieval proportional to changes ──────────────────
@@ -91,8 +102,12 @@ fn test_delta_proportional_to_changes() {
     assert_eq!(delta.len(), 2);
 
     // Delta is 501x cheaper
-    assert!(delta.len() < all.len() / 100,
-        "Delta ({}) must be <1% of full ({})", delta.len(), all.len());
+    assert!(
+        delta.len() < all.len() / 100,
+        "Delta ({}) must be <1% of full ({})",
+        delta.len(),
+        all.len()
+    );
 }
 
 // ── RULE 7: Cache populated after expensive operations ───────────────
@@ -135,7 +150,11 @@ fn test_audit_every_call() {
         audit.record(AuditEntry {
             timestamp: chrono::Utc::now().timestamp_micros(),
             tool: format!("forge_tool_{}", i % 5),
-            layer: if i % 3 == 0 { Layer::Cache } else { Layer::Full },
+            layer: if i % 3 == 0 {
+                Layer::Cache
+            } else {
+                Layer::Full
+            },
             tokens_used: if i % 3 == 0 { 0 } else { 500 },
             tokens_saved: if i % 3 == 0 { 500 } else { 0 },
             cache_hit: i % 3 == 0,
@@ -162,8 +181,11 @@ fn test_conservation_score_improves_with_warmup() {
         metrics.record(Layer::Full, 500, 500);
     }
     let cold_report = generate_report(&metrics, &audit);
-    assert_eq!(cold_report.verdict, ConservationVerdict::Wasteful,
-        "Cold cache should be wasteful");
+    assert_eq!(
+        cold_report.verdict,
+        ConservationVerdict::Wasteful,
+        "Cold cache should be wasteful"
+    );
 
     // Warm phase: 30 cache hits
     for _ in 0..30 {
@@ -171,10 +193,17 @@ fn test_conservation_score_improves_with_warmup() {
     }
     let warm_report = generate_report(&metrics, &audit);
 
-    assert!(warm_report.score > cold_report.score,
-        "Score must improve: cold={} warm={}", cold_report.score, warm_report.score);
-    assert!(warm_report.score >= 0.7,
-        "After 3:1 cache hit ratio, score should be >=0.7: {}", warm_report.score);
+    assert!(
+        warm_report.score > cold_report.score,
+        "Score must improve: cold={} warm={}",
+        cold_report.score,
+        warm_report.score
+    );
+    assert!(
+        warm_report.score >= 0.7,
+        "After 3:1 cache hit ratio, score should be >=0.7: {}",
+        warm_report.score
+    );
 }
 
 // ── Conservation score >= 0.7 after warmup ───────────────────────────
@@ -193,8 +222,11 @@ fn test_conservation_target_07() {
     }
 
     let report = generate_report(&metrics, &audit);
-    assert!(report.score >= 0.7,
-        "Conservation score should be >= 0.7 after warmup: {}", report.score);
+    assert!(
+        report.score >= 0.7,
+        "Conservation score should be >= 0.7 after warmup: {}",
+        report.score
+    );
 }
 
 // ── Token budget enforcement ─────────────────────────────────────────
@@ -287,20 +319,30 @@ fn test_end_to_end_conservation_flow() {
             // Cache hit
             metrics.record(Layer::Cache, 0, 500);
             audit.record(AuditEntry {
-                timestamp: i as i64, tool: "forge_blueprint_get".into(),
-                layer: Layer::Cache, tokens_used: 0, tokens_saved: 500,
-                cache_hit: true, intent: "summary".into(),
-                source_size: 10000, result_size: 0,
+                timestamp: i as i64,
+                tool: "forge_blueprint_get".into(),
+                layer: Layer::Cache,
+                tokens_used: 0,
+                tokens_saved: 500,
+                cache_hit: true,
+                intent: "summary".into(),
+                source_size: 10000,
+                result_size: 0,
             });
         } else {
             // Cache miss → full extraction + populate cache
             metrics.record(Layer::Full, 500, 500);
             cache.insert(key, "result_data".into());
             audit.record(AuditEntry {
-                timestamp: i as i64, tool: "forge_blueprint_get".into(),
-                layer: Layer::Full, tokens_used: 500, tokens_saved: 0,
-                cache_hit: false, intent: "full".into(),
-                source_size: 10000, result_size: 500,
+                timestamp: i as i64,
+                tool: "forge_blueprint_get".into(),
+                layer: Layer::Full,
+                tokens_used: 500,
+                tokens_saved: 0,
+                cache_hit: false,
+                intent: "full".into(),
+                source_size: 10000,
+                result_size: 500,
             });
         }
     }
@@ -308,10 +350,16 @@ fn test_end_to_end_conservation_flow() {
     let report = generate_report(&metrics, &audit);
 
     // 10 unique queries = 10 misses, 40 hits
-    assert!(report.score >= 0.7,
-        "With 80% cache hit rate, score should be >= 0.7: {}", report.score);
-    assert!(report.cache_hit_rate >= 0.7,
-        "Cache hit rate should be >= 0.7: {}", report.cache_hit_rate);
+    assert!(
+        report.score >= 0.7,
+        "With 80% cache hit rate, score should be >= 0.7: {}",
+        report.score
+    );
+    assert!(
+        report.cache_hit_rate >= 0.7,
+        "Cache hit rate should be >= 0.7: {}",
+        report.cache_hit_rate
+    );
     assert_eq!(report.total_tokens, 5000); // 10 misses × 500
     assert_eq!(report.total_savings, 20000); // 40 hits × 500
 }

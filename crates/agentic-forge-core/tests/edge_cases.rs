@@ -1,7 +1,7 @@
 //! Edge case tests — boundary conditions, malformed input, error paths.
 
-use agentic_forge_core::engine::ForgeEngine;
 use agentic_forge_core::engine::validator::BlueprintValidator;
+use agentic_forge_core::engine::ForgeEngine;
 use agentic_forge_core::format::{ForgeReader, ForgeWriter};
 use agentic_forge_core::inventions::*;
 use agentic_forge_core::storage::format::{ForgeFooter, ForgeHeader, SectionType};
@@ -96,16 +96,45 @@ fn test_blueprint_special_chars_name() {
 fn test_blueprint_serialization_roundtrip_with_all_fields() {
     let mut bp = Blueprint::new("Full", "All fields", Domain::Api);
     bp.entities.push(Entity::new("User", "A user"));
-    bp.files.push(FileBlueprint::new("src/main.rs", FileType::Source));
+    bp.files
+        .push(FileBlueprint::new("src/main.rs", FileType::Source));
     bp.dependencies.push(Dependency::new("serde", "1.0"));
-    bp.test_cases.push(TestCase::new("test_a", TestType::Unit, "A"));
-    bp.type_definitions.push(TypeDefinition::new("UserType", TypeKind::Struct));
-    bp.function_blueprints.push(FunctionBlueprint::new("create_user"));
-    bp.layers.push(ArchitectureLayer { name: "domain".into(), description: "".into(), modules: vec![], allowed_dependencies: vec![] });
-    bp.concerns.push(CrossCuttingConcern { name: "logging".into(), concern_type: ConcernType::Logging, affected_layers: vec![], implementation_strategy: "".into() });
-    bp.wiring.push(ComponentWiring { source: "A".into(), target: "B".into(), wiring_type: WiringType::DirectCall, description: "".into() });
-    bp.data_flows.push(DataFlow { source: "A".into(), target: "B".into(), data_type: "X".into(), direction: FlowDirection::Unidirectional, is_async: false });
-    bp.import_graph.push(ImportEdge { from_file: "a.rs".into(), to_file: "b.rs".into(), imported_symbols: vec!["Foo".into()] });
+    bp.test_cases
+        .push(TestCase::new("test_a", TestType::Unit, "A"));
+    bp.type_definitions
+        .push(TypeDefinition::new("UserType", TypeKind::Struct));
+    bp.function_blueprints
+        .push(FunctionBlueprint::new("create_user"));
+    bp.layers.push(ArchitectureLayer {
+        name: "domain".into(),
+        description: "".into(),
+        modules: vec![],
+        allowed_dependencies: vec![],
+    });
+    bp.concerns.push(CrossCuttingConcern {
+        name: "logging".into(),
+        concern_type: ConcernType::Logging,
+        affected_layers: vec![],
+        implementation_strategy: "".into(),
+    });
+    bp.wiring.push(ComponentWiring {
+        source: "A".into(),
+        target: "B".into(),
+        wiring_type: WiringType::DirectCall,
+        description: "".into(),
+    });
+    bp.data_flows.push(DataFlow {
+        source: "A".into(),
+        target: "B".into(),
+        data_type: "X".into(),
+        direction: FlowDirection::Unidirectional,
+        is_async: false,
+    });
+    bp.import_graph.push(ImportEdge {
+        from_file: "a.rs".into(),
+        to_file: "b.rs".into(),
+        imported_symbols: vec!["Foo".into()],
+    });
     bp.generation_order = vec!["types".into(), "main".into()];
     bp.metadata.insert("key".into(), "value".into());
 
@@ -134,10 +163,22 @@ fn test_engine_operate_on_nonexistent_blueprint() {
     let mut engine = ForgeEngine::new();
     let fake_id = BlueprintId::new();
     assert!(engine.writer().rename_blueprint(&fake_id, "x").is_err());
-    assert!(engine.writer().add_entity(&fake_id, Entity::new("A", "B")).is_err());
-    assert!(engine.writer().add_file(&fake_id, FileBlueprint::new("a", FileType::Source)).is_err());
-    assert!(engine.writer().add_dependency(&fake_id, Dependency::new("x", "1")).is_err());
-    assert!(engine.writer().add_test_case(&fake_id, TestCase::new("t", TestType::Unit, "t")).is_err());
+    assert!(engine
+        .writer()
+        .add_entity(&fake_id, Entity::new("A", "B"))
+        .is_err());
+    assert!(engine
+        .writer()
+        .add_file(&fake_id, FileBlueprint::new("a", FileType::Source))
+        .is_err());
+    assert!(engine
+        .writer()
+        .add_dependency(&fake_id, Dependency::new("x", "1"))
+        .is_err());
+    assert!(engine
+        .writer()
+        .add_test_case(&fake_id, TestCase::new("t", TestType::Unit, "t"))
+        .is_err());
     assert!(engine.writer().delete_blueprint(&fake_id).is_err());
 }
 
@@ -146,7 +187,10 @@ fn test_engine_add_entity_with_empty_name() {
     let mut engine = ForgeEngine::new();
     let id = engine.create_blueprint("T", "T", Domain::Api).unwrap();
     // Empty entity name is technically allowed at engine level; validator catches it
-    let eid = engine.writer().add_entity(&id, Entity::new("", "empty")).unwrap();
+    let eid = engine
+        .writer()
+        .add_entity(&id, Entity::new("", "empty"))
+        .unwrap();
     let bp = engine.store.load(&id).unwrap();
     assert_eq!(bp.find_entity_by_id(&eid).unwrap().name, "");
 }
@@ -155,8 +199,13 @@ fn test_engine_add_entity_with_empty_name() {
 fn test_engine_duplicate_entity_name() {
     let mut engine = ForgeEngine::new();
     let id = engine.create_blueprint("T", "T", Domain::Api).unwrap();
-    engine.writer().add_entity(&id, Entity::new("Dup", "first")).unwrap();
-    let result = engine.writer().add_entity(&id, Entity::new("Dup", "second"));
+    engine
+        .writer()
+        .add_entity(&id, Entity::new("Dup", "first"))
+        .unwrap();
+    let result = engine
+        .writer()
+        .add_entity(&id, Entity::new("Dup", "second"));
     assert!(result.is_err(), "Duplicate entity name must error");
 }
 
@@ -164,8 +213,13 @@ fn test_engine_duplicate_entity_name() {
 fn test_engine_duplicate_dependency_name() {
     let mut engine = ForgeEngine::new();
     let id = engine.create_blueprint("T", "T", Domain::Api).unwrap();
-    engine.writer().add_dependency(&id, Dependency::new("serde", "1.0")).unwrap();
-    let result = engine.writer().add_dependency(&id, Dependency::new("serde", "2.0"));
+    engine
+        .writer()
+        .add_dependency(&id, Dependency::new("serde", "1.0"))
+        .unwrap();
+    let result = engine
+        .writer()
+        .add_dependency(&id, Dependency::new("serde", "2.0"));
     assert!(result.is_err(), "Duplicate dependency name must error");
 }
 
@@ -207,15 +261,24 @@ fn test_engine_add_field_to_nonexistent_entity() {
     let id = engine.create_blueprint("T", "T", Domain::Api).unwrap();
     let fake_eid = EntityId::new();
     let field = EntityField::new("x", FieldType::String);
-    assert!(engine.writer().add_field_to_entity(&id, &fake_eid, field).is_err());
+    assert!(engine
+        .writer()
+        .add_field_to_entity(&id, &fake_eid, field)
+        .is_err());
 }
 
 #[test]
 fn test_engine_remove_field_nonexistent() {
     let mut engine = ForgeEngine::new();
     let id = engine.create_blueprint("T", "T", Domain::Api).unwrap();
-    let eid = engine.writer().add_entity(&id, Entity::new("X", "X")).unwrap();
-    assert!(engine.writer().remove_field_from_entity(&id, &eid, "ghost").is_err());
+    let eid = engine
+        .writer()
+        .add_entity(&id, Entity::new("X", "X"))
+        .unwrap();
+    assert!(engine
+        .writer()
+        .remove_field_from_entity(&id, &eid, "ghost")
+        .is_err());
 }
 
 #[test]
@@ -223,7 +286,10 @@ fn test_engine_update_dep_version_nonexistent() {
     let mut engine = ForgeEngine::new();
     let id = engine.create_blueprint("T", "T", Domain::Api).unwrap();
     let fake_did = DependencyId::new();
-    assert!(engine.writer().update_dependency_version(&id, &fake_did, "9.9").is_err());
+    assert!(engine
+        .writer()
+        .update_dependency_version(&id, &fake_did, "9.9")
+        .is_err());
 }
 
 // ── Store edge cases ─────────────────────────────────────────────────
@@ -273,9 +339,10 @@ fn test_format_header_wrong_version() {
 
 #[test]
 fn test_format_footer_wrong_magic() {
-    let mut buf = vec![0xDE, 0xAD, 0xBE, 0xEF, 0x00, 0x00, 0x00, 0x00, // bad magic
-                       0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-                       0x00, 0x00, 0x00, 0x00];
+    let mut buf = vec![
+        0xDE, 0xAD, 0xBE, 0xEF, 0x00, 0x00, 0x00, 0x00, // bad magic
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+    ];
     buf.extend_from_slice(&[0x00; 44]); // pad to 64
     let result = ForgeFooter::read_from(&mut Cursor::new(&buf));
     assert!(result.is_err());
@@ -301,7 +368,8 @@ fn test_format_write_read_roundtrip_large() {
     for i in 0..50 {
         let mut bp = Blueprint::new(&format!("Project_{}", i), "test", Domain::Api);
         for j in 0..10 {
-            bp.entities.push(Entity::new(&format!("Entity_{}_{}", i, j), "entity"));
+            bp.entities
+                .push(Entity::new(&format!("Entity_{}_{}", i, j), "entity"));
         }
         blueprints.push(bp);
     }
@@ -325,14 +393,22 @@ fn test_format_section_type_out_of_range() {
 #[test]
 fn test_domain_from_u8_all_valid() {
     for v in [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 255u8] {
-        assert!(Domain::from_u8(v).is_some(), "Domain::from_u8({}) should be Some", v);
+        assert!(
+            Domain::from_u8(v).is_some(),
+            "Domain::from_u8({}) should be Some",
+            v
+        );
     }
 }
 
 #[test]
 fn test_domain_from_u8_invalid() {
     for v in [10, 11, 50, 100, 200, 254u8] {
-        assert!(Domain::from_u8(v).is_none(), "Domain::from_u8({}) should be None", v);
+        assert!(
+            Domain::from_u8(v).is_none(),
+            "Domain::from_u8({}) should be None",
+            v
+        );
     }
 }
 
@@ -355,7 +431,10 @@ fn test_domain_from_name_unknown() {
 #[test]
 fn test_entity_inferrer_empty_string() {
     let entities = EntityInferrer::infer("");
-    assert!(!entities.is_empty(), "Should return default entity for empty input");
+    assert!(
+        !entities.is_empty(),
+        "Should return default entity for empty input"
+    );
 }
 
 #[test]
@@ -384,7 +463,11 @@ fn test_layer_decomposer_all_domains() {
     for v in [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 255u8] {
         let domain = Domain::from_u8(v).unwrap();
         let layers = LayerDecomposer::decompose(domain);
-        assert!(!layers.is_empty(), "Domain {:?} must produce at least one layer", domain);
+        assert!(
+            !layers.is_empty(),
+            "Domain {:?} must produce at least one layer",
+            domain
+        );
     }
 }
 
@@ -415,15 +498,29 @@ fn test_dependency_inferrer_all_domains() {
         let domain = Domain::from_u8(v).unwrap();
         let deps = DependencyInferrer::infer(domain, &[], &[]);
         // Every domain should at least get serde + serde_json + thiserror
-        assert!(deps.len() >= 3, "Domain {:?} must have at least 3 deps, got {}", domain, deps.len());
+        assert!(
+            deps.len() >= 3,
+            "Domain {:?} must have at least 3 deps, got {}",
+            domain,
+            deps.len()
+        );
     }
 }
 
 #[test]
 fn test_api_spec_extractor_non_api_domains() {
-    for domain in [Domain::Cli, Domain::Library, Domain::Embedded, Domain::Desktop] {
+    for domain in [
+        Domain::Cli,
+        Domain::Library,
+        Domain::Embedded,
+        Domain::Desktop,
+    ] {
         let endpoints = ApiSpecExtractor::extract(&[Entity::new("X", "X")], domain);
-        assert!(endpoints.is_empty(), "Domain {:?} should not produce API endpoints", domain);
+        assert!(
+            endpoints.is_empty(),
+            "Domain {:?} should not produce API endpoints",
+            domain
+        );
     }
 }
 
@@ -443,7 +540,9 @@ fn test_conflict_resolver_single_dep() {
 fn test_test_case_generator_entity_with_many_fields() {
     let mut entity = Entity::new("Big", "big entity");
     for i in 0..20 {
-        entity.fields.push(EntityField::new(&format!("field_{}", i), FieldType::String));
+        entity
+            .fields
+            .push(EntityField::new(&format!("field_{}", i), FieldType::String));
     }
     let tests = TestCaseGenerator::generate(&entity);
     // Should have CRUD tests + one requires_ test per required field + not_found + serialization
@@ -498,8 +597,10 @@ fn test_integration_test_planner_no_relationships() {
 #[test]
 fn test_validator_duplicate_file_paths() {
     let mut bp = Blueprint::new("Dup", "dup", Domain::Api);
-    bp.files.push(FileBlueprint::new("src/main.rs", FileType::Source));
-    bp.files.push(FileBlueprint::new("src/main.rs", FileType::Source));
+    bp.files
+        .push(FileBlueprint::new("src/main.rs", FileType::Source));
+    bp.files
+        .push(FileBlueprint::new("src/main.rs", FileType::Source));
     let report = BlueprintValidator::validate(&bp).unwrap();
     assert!(!report.is_valid);
     assert!(report.errors.iter().any(|e| e.contains("Duplicate file")));
@@ -512,15 +613,22 @@ fn test_validator_duplicate_dependency_names() {
     bp.dependencies.push(Dependency::new("serde", "2.0"));
     let report = BlueprintValidator::validate(&bp).unwrap();
     assert!(!report.is_valid);
-    assert!(report.errors.iter().any(|e| e.contains("Duplicate dependency")));
+    assert!(report
+        .errors
+        .iter()
+        .any(|e| e.contains("Duplicate dependency")));
 }
 
 #[test]
 fn test_validator_entity_with_duplicate_fields() {
     let mut bp = Blueprint::new("Dup", "dup", Domain::Api);
     let mut entity = Entity::new("User", "A user");
-    entity.fields.push(EntityField::new("name", FieldType::String));
-    entity.fields.push(EntityField::new("name", FieldType::String));
+    entity
+        .fields
+        .push(EntityField::new("name", FieldType::String));
+    entity
+        .fields
+        .push(EntityField::new("name", FieldType::String));
     bp.entities.push(entity);
     let report = BlueprintValidator::validate(&bp).unwrap();
     assert!(!report.is_valid);
@@ -560,7 +668,11 @@ fn test_validator_data_flow_empty() {
 fn test_invention_count_matches() {
     assert_eq!(agentic_forge_core::types::INVENTION_COUNT, 32);
     let names = all_invention_names();
-    assert_eq!(names.len(), 32, "all_invention_names() must return exactly 32");
+    assert_eq!(
+        names.len(),
+        32,
+        "all_invention_names() must return exactly 32"
+    );
 }
 
 #[test]

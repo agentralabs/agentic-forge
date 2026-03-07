@@ -387,7 +387,9 @@ mod tests {
     fn test_entity_spec_builder() {
         let entity = EntitySpec::new("User", "A user entity")
             .with_field(FieldSpec::new("name", FieldType::String))
-            .with_field(FieldSpec::new("email", FieldType::String).with_constraint(FieldConstraint::Unique))
+            .with_field(
+                FieldSpec::new("email", FieldType::String).with_constraint(FieldConstraint::Unique),
+            )
             .as_aggregate_root();
         assert_eq!(entity.name, "User");
         assert!(entity.is_aggregate_root);
@@ -398,8 +400,14 @@ mod tests {
     fn test_field_type_name() {
         assert_eq!(FieldType::String.name(), "String");
         assert_eq!(FieldType::Integer.name(), "i64");
-        assert_eq!(FieldType::Array(Box::new(FieldType::String)).name(), "Vec<String>");
-        assert_eq!(FieldType::Optional(Box::new(FieldType::Integer)).name(), "Option<i64>");
+        assert_eq!(
+            FieldType::Array(Box::new(FieldType::String)).name(),
+            "Vec<String>"
+        );
+        assert_eq!(
+            FieldType::Optional(Box::new(FieldType::Integer)).name(),
+            "Option<i64>"
+        );
     }
 
     #[test]
@@ -417,7 +425,11 @@ mod tests {
 
     #[test]
     fn test_constraint_creation() {
-        let c = Constraint::new("max_latency", ConstraintType::Performance("< 100ms".into()), "API must respond under 100ms");
+        let c = Constraint::new(
+            "max_latency",
+            ConstraintType::Performance("< 100ms".into()),
+            "API must respond under 100ms",
+        );
         assert_eq!(c.name, "max_latency");
     }
 

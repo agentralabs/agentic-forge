@@ -1,7 +1,7 @@
 //! Audit log generation for every MCP call.
 
-use serde::{Deserialize, Serialize};
 use super::tokens::Layer;
+use serde::{Deserialize, Serialize};
 use std::sync::Mutex;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -19,7 +19,9 @@ pub struct AuditEntry {
 
 impl AuditEntry {
     pub fn waste_ratio(&self) -> f64 {
-        if self.source_size == 0 { return 0.0; }
+        if self.source_size == 0 {
+            return 0.0;
+        }
         self.result_size as f64 / self.source_size as f64
     }
 }
@@ -63,22 +65,36 @@ impl AuditLog {
 
     pub fn average_waste_ratio(&self) -> f64 {
         let entries = self.entries.lock().unwrap();
-        if entries.is_empty() { return 0.0; }
+        if entries.is_empty() {
+            return 0.0;
+        }
         let total: f64 = entries.iter().map(|e| e.waste_ratio()).sum();
         total / entries.len() as f64
     }
 
     pub fn total_tokens_used(&self) -> u64 {
-        self.entries.lock().unwrap().iter().map(|e| e.tokens_used).sum()
+        self.entries
+            .lock()
+            .unwrap()
+            .iter()
+            .map(|e| e.tokens_used)
+            .sum()
     }
 
     pub fn total_tokens_saved(&self) -> u64 {
-        self.entries.lock().unwrap().iter().map(|e| e.tokens_saved).sum()
+        self.entries
+            .lock()
+            .unwrap()
+            .iter()
+            .map(|e| e.tokens_saved)
+            .sum()
     }
 
     pub fn cache_hit_rate(&self) -> f64 {
         let entries = self.entries.lock().unwrap();
-        if entries.is_empty() { return 0.0; }
+        if entries.is_empty() {
+            return 0.0;
+        }
         let hits = entries.iter().filter(|e| e.cache_hit).count();
         hits as f64 / entries.len() as f64
     }
@@ -103,7 +119,13 @@ impl Default for AuditLog {
 mod tests {
     use super::*;
 
-    fn make_entry(tool: &str, layer: Layer, tokens: u64, saved: u64, cache_hit: bool) -> AuditEntry {
+    fn make_entry(
+        tool: &str,
+        layer: Layer,
+        tokens: u64,
+        saved: u64,
+        cache_hit: bool,
+    ) -> AuditEntry {
         AuditEntry {
             timestamp: chrono::Utc::now().timestamp_micros(),
             tool: tool.into(),
@@ -128,7 +150,8 @@ mod tests {
     fn test_audit_log_max_entries() {
         let log = AuditLog::new(3);
         for i in 0..5 {
-            log.record(make_entry(&format!("tool_{}", i), Layer::Full, 100, 0, false));
+            let tool = format!("tool_{}", i);
+            log.record(make_entry(&tool, Layer::Full, 100, 0, false));
         }
         assert_eq!(log.len(), 3);
     }

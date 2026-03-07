@@ -23,20 +23,44 @@ pub const INVENTION_COUNT: usize = 32;
 pub fn all_invention_names() -> Vec<&'static str> {
     vec![
         // Tier 1 - Decomposition
-        "LayerDecomposer", "ConcernAnalyzer", "BoundaryInferrer", "CrossCuttingDetector",
+        "LayerDecomposer",
+        "ConcernAnalyzer",
+        "BoundaryInferrer",
+        "CrossCuttingDetector",
         // Tier 2 - Entity
-        "EntityInferrer", "RelationshipMapper", "FieldDeriver", "ValidationRuleGenerator",
+        "EntityInferrer",
+        "RelationshipMapper",
+        "FieldDeriver",
+        "ValidationRuleGenerator",
         // Tier 3 - Operation
-        "OperationInferrer", "SignatureGenerator", "ErrorFlowDesigner", "AsyncAnalyzer",
+        "OperationInferrer",
+        "SignatureGenerator",
+        "ErrorFlowDesigner",
+        "AsyncAnalyzer",
         // Tier 4 - Structure
-        "FileStructureGenerator", "ImportGraphGenerator", "ModuleHierarchyBuilder", "ConfigDesigner",
+        "FileStructureGenerator",
+        "ImportGraphGenerator",
+        "ModuleHierarchyBuilder",
+        "ConfigDesigner",
         // Tier 5 - Dependency
-        "DependencyInferrer", "VersionResolver", "ApiSpecExtractor", "ConflictResolver",
+        "DependencyInferrer",
+        "VersionResolver",
+        "ApiSpecExtractor",
+        "ConflictResolver",
         // Tier 6 - Blueprint
-        "SkeletonGenerator", "TypeFirstMaterializer", "ContractSpecifier", "GenerationPlanner",
+        "SkeletonGenerator",
+        "TypeFirstMaterializer",
+        "ContractSpecifier",
+        "GenerationPlanner",
         // Tier 7 - Integration
-        "WiringDiagramBuilder", "DataFlowSpecifier", "InitSequencer", "ShutdownSequencer",
+        "WiringDiagramBuilder",
+        "DataFlowSpecifier",
+        "InitSequencer",
+        "ShutdownSequencer",
         // Tier 8 - Test
-        "TestCaseGenerator", "TestFixtureDesigner", "IntegrationTestPlanner", "MockSpecifier",
+        "TestCaseGenerator",
+        "TestFixtureDesigner",
+        "IntegrationTestPlanner",
+        "MockSpecifier",
     ]
 }

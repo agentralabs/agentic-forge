@@ -1,10 +1,10 @@
 //! Generic LRU cache with TTL.
 
+use super::metrics::CacheMetrics;
 use std::collections::HashMap;
 use std::hash::Hash;
 use std::sync::RwLock;
 use std::time::{Duration, Instant};
-use super::metrics::CacheMetrics;
 
 struct CacheEntry<V> {
     value: V,
@@ -52,12 +52,15 @@ impl<K: Hash + Eq + Clone, V: Clone> Cache<K, V> {
         if entries.len() >= self.max_size {
             self.evict_lru(&mut entries);
         }
-        entries.insert(key, CacheEntry {
-            value,
-            inserted_at: Instant::now(),
-            last_accessed: Instant::now(),
-            access_count: 0,
-        });
+        entries.insert(
+            key,
+            CacheEntry {
+                value,
+                inserted_at: Instant::now(),
+                last_accessed: Instant::now(),
+                access_count: 0,
+            },
+        );
         self.metrics.set_size(entries.len());
     }
 
@@ -92,7 +95,8 @@ impl<K: Hash + Eq + Clone, V: Clone> Cache<K, V> {
     }
 
     fn evict_lru(&self, entries: &mut HashMap<K, CacheEntry<V>>) {
-        if let Some(lru_key) = entries.iter()
+        if let Some(lru_key) = entries
+            .iter()
             .min_by_key(|(_, e)| e.last_accessed)
             .map(|(k, _)| k.clone())
         {
@@ -148,7 +152,9 @@ mod tests {
     #[test]
     fn test_cache_clear() {
         let cache: Cache<u32, u32> = Cache::new(10, Duration::from_secs(60));
-        for i in 0..5 { cache.insert(i, i * 10); }
+        for i in 0..5 {
+            cache.insert(i, i * 10);
+        }
         cache.clear();
         assert!(cache.is_empty());
     }
@@ -165,9 +171,9 @@ mod tests {
     fn test_cache_metrics_hit_miss() {
         let cache: Cache<String, String> = Cache::new(10, Duration::from_secs(60));
         cache.insert("key".into(), "value".into());
-        let _ = cache.get(&"key".into());    // hit
-        let _ = cache.get(&"miss".into());   // miss
-        let _ = cache.get(&"key".into());    // hit
+        let _ = cache.get(&"key".into()); // hit
+        let _ = cache.get(&"miss".into()); // miss
+        let _ = cache.get(&"key".into()); // hit
         assert_eq!(cache.metrics.hits(), 2);
         assert_eq!(cache.metrics.misses(), 1);
         assert!(cache.metrics.hit_rate() > 0.6);

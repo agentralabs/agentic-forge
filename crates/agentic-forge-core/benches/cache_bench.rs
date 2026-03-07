@@ -1,5 +1,5 @@
-use criterion::{black_box, criterion_group, criterion_main, Criterion};
 use agentic_forge_core::cache::Cache;
+use criterion::{black_box, criterion_group, criterion_main, Criterion};
 use std::time::Duration;
 
 fn bench_cache_insert(c: &mut Criterion) {
@@ -35,5 +35,10 @@ fn bench_cache_get_miss(c: &mut Criterion) {
     });
 }
 
-criterion_group!(benches, bench_cache_insert, bench_cache_get_hit, bench_cache_get_miss);
+criterion_group!(
+    benches,
+    bench_cache_insert,
+    bench_cache_get_hit,
+    bench_cache_get_miss
+);
 criterion_main!(benches);

@@ -1,8 +1,8 @@
 //! JSON-RPC message types.
 
+use super::error::RequestId;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
-use super::error::RequestId;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct JsonRpcRequest {
@@ -33,7 +33,12 @@ pub struct JsonRpcError {
 
 impl JsonRpcResponse {
     pub fn success(id: RequestId, result: Value) -> Self {
-        Self { jsonrpc: "2.0".into(), id, result: Some(result), error: None }
+        Self {
+            jsonrpc: "2.0".into(),
+            id,
+            result: Some(result),
+            error: None,
+        }
     }
 
     pub fn error(id: RequestId, code: i32, message: String) -> Self {
@@ -41,7 +46,11 @@ impl JsonRpcResponse {
             jsonrpc: "2.0".into(),
             id,
             result: None,
-            error: Some(JsonRpcError { code, message, data: None }),
+            error: Some(JsonRpcError {
+                code,
+                message,
+                data: None,
+            }),
         }
     }
 }

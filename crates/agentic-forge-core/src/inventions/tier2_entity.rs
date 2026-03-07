@@ -10,15 +10,37 @@ impl EntityInferrer {
     pub fn infer(description: &str) -> Vec<EntitySpec> {
         let mut entities = Vec::new();
         let words: Vec<&str> = description.split_whitespace().collect();
-        let nouns = ["user", "account", "post", "comment", "product", "order", "item",
-                     "category", "tag", "role", "permission", "session", "token",
-                     "file", "image", "message", "notification", "event", "log",
-                     "config", "setting", "profile", "address", "payment"];
+        let nouns = [
+            "user",
+            "account",
+            "post",
+            "comment",
+            "product",
+            "order",
+            "item",
+            "category",
+            "tag",
+            "role",
+            "permission",
+            "session",
+            "token",
+            "file",
+            "image",
+            "message",
+            "notification",
+            "event",
+            "log",
+            "config",
+            "setting",
+            "profile",
+            "address",
+            "payment",
+        ];
 
         for noun in &nouns {
             if words.iter().any(|w| w.to_lowercase().contains(noun)) {
                 let name = capitalize(noun);
-                entities.push(EntitySpec::new(&name, &format!("Inferred entity: {}", name)));
+                entities.push(EntitySpec::new(&name, format!("Inferred entity: {}", name)));
             }
         }
 
@@ -29,8 +51,12 @@ impl EntityInferrer {
         entities
     }
 
-    pub fn name() -> &'static str { "EntityInferrer" }
-    pub fn tier() -> u8 { 2 }
+    pub fn name() -> &'static str {
+        "EntityInferrer"
+    }
+    pub fn tier() -> u8 {
+        2
+    }
 }
 
 fn capitalize(s: &str) -> String {
@@ -52,23 +78,29 @@ impl RelationshipMapper {
             for field in &entity.fields {
                 if let FieldType::Reference(ref target) = field.field_type {
                     if entity_names.contains(&target.as_str()) {
-                        relationships.push((entity.name.clone(), Relationship {
-                            target_entity: target.clone(),
-                            relationship_type: RelationshipType::BelongsTo,
-                            cardinality: Cardinality::ManyToOne,
-                            description: format!("{} belongs to {}", entity.name, target),
-                        }));
+                        relationships.push((
+                            entity.name.clone(),
+                            Relationship {
+                                target_entity: target.clone(),
+                                relationship_type: RelationshipType::BelongsTo,
+                                cardinality: Cardinality::ManyToOne,
+                                description: format!("{} belongs to {}", entity.name, target),
+                            },
+                        ));
                     }
                 }
                 if let FieldType::Array(ref inner) = field.field_type {
                     if let FieldType::Reference(ref target) = **inner {
                         if entity_names.contains(&target.as_str()) {
-                            relationships.push((entity.name.clone(), Relationship {
-                                target_entity: target.clone(),
-                                relationship_type: RelationshipType::HasMany,
-                                cardinality: Cardinality::OneToMany,
-                                description: format!("{} has many {}", entity.name, target),
-                            }));
+                            relationships.push((
+                                entity.name.clone(),
+                                Relationship {
+                                    target_entity: target.clone(),
+                                    relationship_type: RelationshipType::HasMany,
+                                    cardinality: Cardinality::OneToMany,
+                                    description: format!("{} has many {}", entity.name, target),
+                                },
+                            ));
                         }
                     }
                 }
@@ -78,8 +110,12 @@ impl RelationshipMapper {
         relationships
     }
 
-    pub fn name() -> &'static str { "RelationshipMapper" }
-    pub fn tier() -> u8 { 2 }
+    pub fn name() -> &'static str {
+        "RelationshipMapper"
+    }
+    pub fn tier() -> u8 {
+        2
+    }
 }
 
 pub struct FieldDeriver;
@@ -88,8 +124,20 @@ impl FieldDeriver {
     pub fn derive_fields(entity_name: &str, domain: Domain) -> Vec<EntityField> {
         let mut fields = vec![
             EntityField::new("id", FieldType::Uuid),
-            EntityField { name: "created_at".into(), field_type: FieldType::DateTime, required: true, default_value: Some("now()".into()), description: "Creation timestamp".into() },
-            EntityField { name: "updated_at".into(), field_type: FieldType::DateTime, required: true, default_value: Some("now()".into()), description: "Last update timestamp".into() },
+            EntityField {
+                name: "created_at".into(),
+                field_type: FieldType::DateTime,
+                required: true,
+                default_value: Some("now()".into()),
+                description: "Creation timestamp".into(),
+            },
+            EntityField {
+                name: "updated_at".into(),
+                field_type: FieldType::DateTime,
+                required: true,
+                default_value: Some("now()".into()),
+                description: "Last update timestamp".into(),
+            },
         ];
 
         let name_lower = entity_name.to_lowercase();
@@ -124,8 +172,12 @@ impl FieldDeriver {
         fields
     }
 
-    pub fn name() -> &'static str { "FieldDeriver" }
-    pub fn tier() -> u8 { 2 }
+    pub fn name() -> &'static str {
+        "FieldDeriver"
+    }
+    pub fn tier() -> u8 {
+        2
+    }
 }
 
 pub struct ValidationRuleGenerator;
@@ -182,8 +234,12 @@ impl ValidationRuleGenerator {
         rules
     }
 
-    pub fn name() -> &'static str { "ValidationRuleGenerator" }
-    pub fn tier() -> u8 { 2 }
+    pub fn name() -> &'static str {
+        "ValidationRuleGenerator"
+    }
+    pub fn tier() -> u8 {
+        2
+    }
 }
 
 #[cfg(test)]
@@ -215,7 +271,10 @@ mod tests {
         let mut user = Entity::new("User", "A user");
         user.fields.push(EntityField::new("id", FieldType::Uuid));
         let mut post = Entity::new("Post", "A post");
-        post.fields.push(EntityField::new("author_id", FieldType::Reference("User".into())));
+        post.fields.push(EntityField::new(
+            "author_id",
+            FieldType::Reference("User".into()),
+        ));
         let rels = RelationshipMapper::map_relationships(&[user, post]);
         assert_eq!(rels.len(), 1);
         assert_eq!(rels[0].1.target_entity, "User");
@@ -224,7 +283,10 @@ mod tests {
     #[test]
     fn test_relationship_mapper_has_many() {
         let mut user = Entity::new("User", "A user");
-        user.fields.push(EntityField::new("posts", FieldType::Array(Box::new(FieldType::Reference("Post".into())))));
+        user.fields.push(EntityField::new(
+            "posts",
+            FieldType::Array(Box::new(FieldType::Reference("Post".into()))),
+        ));
         let post = Entity::new("Post", "A post");
         let rels = RelationshipMapper::map_relationships(&[user, post]);
         assert_eq!(rels.len(), 1);
@@ -261,8 +323,12 @@ mod tests {
     #[test]
     fn test_validation_rule_generator() {
         let mut entity = Entity::new("User", "A user");
-        entity.fields.push(EntityField::new("email", FieldType::String));
-        entity.fields.push(EntityField::new("name", FieldType::String));
+        entity
+            .fields
+            .push(EntityField::new("email", FieldType::String));
+        entity
+            .fields
+            .push(EntityField::new("name", FieldType::String));
         let rules = ValidationRuleGenerator::generate(&entity);
         assert!(!rules.is_empty());
         assert!(rules.iter().any(|r| r.rule_type == "email_format"));
@@ -271,7 +337,9 @@ mod tests {
     #[test]
     fn test_validation_rule_price() {
         let mut entity = Entity::new("Product", "A product");
-        entity.fields.push(EntityField::new("price", FieldType::Float));
+        entity
+            .fields
+            .push(EntityField::new("price", FieldType::Float));
         let rules = ValidationRuleGenerator::generate(&entity);
         assert!(rules.iter().any(|r| r.rule_type == "min_value"));
     }

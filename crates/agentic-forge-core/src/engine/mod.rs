@@ -12,7 +12,7 @@ use crate::storage::BlueprintStore;
 use crate::types::blueprint::Blueprint;
 use crate::types::ids::BlueprintId;
 use crate::types::intent::Domain;
-use crate::types::{ForgeError, ForgeResult};
+use crate::types::ForgeResult;
 
 #[derive(Debug)]
 pub struct ForgeEngine {
@@ -98,7 +98,9 @@ mod tests {
     #[test]
     fn test_engine_create_blueprint() {
         let mut engine = ForgeEngine::new();
-        let id = engine.create_blueprint("Test", "A test", Domain::Api).unwrap();
+        let id = engine
+            .create_blueprint("Test", "A test", Domain::Api)
+            .unwrap();
         assert_eq!(engine.blueprint_count(), 1);
         assert!(engine.is_dirty());
         let bp = engine.store.load(&id).unwrap();
@@ -108,7 +110,9 @@ mod tests {
     #[test]
     fn test_engine_writer_reader() {
         let mut engine = ForgeEngine::new();
-        let id = engine.create_blueprint("Test", "A test", Domain::Web).unwrap();
+        let id = engine
+            .create_blueprint("Test", "A test", Domain::Web)
+            .unwrap();
         {
             let reader = engine.reader();
             let bp = reader.get_blueprint(&id).unwrap();
@@ -126,7 +130,9 @@ mod tests {
     fn test_engine_dirty_tracking() {
         let mut engine = ForgeEngine::new();
         assert!(!engine.is_dirty());
-        engine.create_blueprint("Test", "Test", Domain::Cli).unwrap();
+        engine
+            .create_blueprint("Test", "Test", Domain::Cli)
+            .unwrap();
         assert!(engine.is_dirty());
         engine.mark_clean();
         assert!(!engine.is_dirty());

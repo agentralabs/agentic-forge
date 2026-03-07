@@ -1,8 +1,8 @@
 //! Conservation score computation and reporting.
 
-use serde::{Deserialize, Serialize};
-use super::tokens::TokenMetrics;
 use super::audit::AuditLog;
+use super::tokens::TokenMetrics;
+use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ConservationReport {
@@ -25,20 +25,26 @@ pub struct LayerBreakdown {
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub enum ConservationVerdict {
-    Excellent,  // >= 0.8
-    Good,       // >= 0.6
-    Fair,       // >= 0.4
-    Poor,       // >= 0.2
-    Wasteful,   // < 0.2
+    Excellent, // >= 0.8
+    Good,      // >= 0.6
+    Fair,      // >= 0.4
+    Poor,      // >= 0.2
+    Wasteful,  // < 0.2
 }
 
 impl ConservationVerdict {
     pub fn from_score(score: f64) -> Self {
-        if score >= 0.8 { Self::Excellent }
-        else if score >= 0.6 { Self::Good }
-        else if score >= 0.4 { Self::Fair }
-        else if score >= 0.2 { Self::Poor }
-        else { Self::Wasteful }
+        if score >= 0.8 {
+            Self::Excellent
+        } else if score >= 0.6 {
+            Self::Good
+        } else if score >= 0.4 {
+            Self::Fair
+        } else if score >= 0.2 {
+            Self::Poor
+        } else {
+            Self::Wasteful
+        }
     }
 
     pub fn name(&self) -> &'static str {
@@ -79,16 +85,31 @@ pub fn generate_report(metrics: &TokenMetrics, audit: &AuditLog) -> Conservation
 
 #[cfg(test)]
 mod tests {
-    use super::*;
     use super::super::tokens::Layer;
+    use super::*;
 
     #[test]
     fn test_verdict_from_score() {
-        assert_eq!(ConservationVerdict::from_score(0.9), ConservationVerdict::Excellent);
-        assert_eq!(ConservationVerdict::from_score(0.7), ConservationVerdict::Good);
-        assert_eq!(ConservationVerdict::from_score(0.5), ConservationVerdict::Fair);
-        assert_eq!(ConservationVerdict::from_score(0.3), ConservationVerdict::Poor);
-        assert_eq!(ConservationVerdict::from_score(0.1), ConservationVerdict::Wasteful);
+        assert_eq!(
+            ConservationVerdict::from_score(0.9),
+            ConservationVerdict::Excellent
+        );
+        assert_eq!(
+            ConservationVerdict::from_score(0.7),
+            ConservationVerdict::Good
+        );
+        assert_eq!(
+            ConservationVerdict::from_score(0.5),
+            ConservationVerdict::Fair
+        );
+        assert_eq!(
+            ConservationVerdict::from_score(0.3),
+            ConservationVerdict::Poor
+        );
+        assert_eq!(
+            ConservationVerdict::from_score(0.1),
+            ConservationVerdict::Wasteful
+        );
     }
 
     #[test]
@@ -123,8 +144,15 @@ mod tests {
         }
 
         let report = generate_report(&metrics, &audit);
-        assert!(report.score >= 0.7, "Score should be >=0.7 with 75% cache hits: {}", report.score);
-        assert!(report.verdict == ConservationVerdict::Good || report.verdict == ConservationVerdict::Excellent);
+        assert!(
+            report.score >= 0.7,
+            "Score should be >=0.7 with 75% cache hits: {}",
+            report.score
+        );
+        assert!(
+            report.verdict == ConservationVerdict::Good
+                || report.verdict == ConservationVerdict::Excellent
+        );
     }
 
     #[test]
@@ -144,9 +172,12 @@ mod tests {
         }
         let warm_report = generate_report(&metrics, &audit);
 
-        assert!(warm_report.score > cold_report.score,
+        assert!(
+            warm_report.score > cold_report.score,
             "Warm score ({}) should exceed cold score ({})",
-            warm_report.score, cold_report.score);
+            warm_report.score,
+            cold_report.score
+        );
     }
 
     #[test]

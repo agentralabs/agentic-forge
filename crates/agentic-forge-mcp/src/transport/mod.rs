@@ -1,10 +1,10 @@
 //! Transport layer — stdio with optional auth gate.
 
-use tokio::io::{AsyncBufReadExt, AsyncWriteExt, BufReader};
-use std::sync::Arc;
-use tokio::sync::Mutex;
 use crate::protocol::ProtocolHandler;
 use crate::session::SessionManager;
+use std::sync::Arc;
+use tokio::io::{AsyncBufReadExt, AsyncWriteExt, BufReader};
+use tokio::sync::Mutex;
 
 fn check_auth_gate() -> Result<(), String> {
     if let Ok(required_token) = std::env::var("AGENTIC_TOKEN") {

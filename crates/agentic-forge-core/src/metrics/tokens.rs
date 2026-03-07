@@ -54,17 +54,33 @@ impl TokenMetrics {
     pub fn record(&self, layer: Layer, tokens: u64, potential: u64) {
         self.total.fetch_add(tokens, Ordering::Relaxed);
         match layer {
-            Layer::Cache => { self.layer0_cache.fetch_add(tokens, Ordering::Relaxed); }
-            Layer::Index => { self.layer1_index.fetch_add(tokens, Ordering::Relaxed); }
-            Layer::Scoped => { self.layer2_scoped.fetch_add(tokens, Ordering::Relaxed); }
-            Layer::Delta => { self.layer3_delta.fetch_add(tokens, Ordering::Relaxed); }
-            Layer::Full => { self.layer4_full.fetch_add(tokens, Ordering::Relaxed); }
+            Layer::Cache => {
+                self.layer0_cache.fetch_add(tokens, Ordering::Relaxed);
+            }
+            Layer::Index => {
+                self.layer1_index.fetch_add(tokens, Ordering::Relaxed);
+            }
+            Layer::Scoped => {
+                self.layer2_scoped.fetch_add(tokens, Ordering::Relaxed);
+            }
+            Layer::Delta => {
+                self.layer3_delta.fetch_add(tokens, Ordering::Relaxed);
+            }
+            Layer::Full => {
+                self.layer4_full.fetch_add(tokens, Ordering::Relaxed);
+            }
         }
         let saved = potential.saturating_sub(tokens);
         match layer {
-            Layer::Cache => { self.cache_savings.fetch_add(saved, Ordering::Relaxed); }
-            Layer::Scoped => { self.scope_savings.fetch_add(saved, Ordering::Relaxed); }
-            Layer::Delta => { self.delta_savings.fetch_add(saved, Ordering::Relaxed); }
+            Layer::Cache => {
+                self.cache_savings.fetch_add(saved, Ordering::Relaxed);
+            }
+            Layer::Scoped => {
+                self.scope_savings.fetch_add(saved, Ordering::Relaxed);
+            }
+            Layer::Delta => {
+                self.delta_savings.fetch_add(saved, Ordering::Relaxed);
+            }
             _ => {}
         }
     }
@@ -83,7 +99,9 @@ impl TokenMetrics {
         let total = self.total_tokens();
         let saved = self.total_savings();
         let potential = total + saved;
-        if potential == 0 { return 1.0; }
+        if potential == 0 {
+            return 1.0;
+        }
         saved as f64 / potential as f64
     }
 
@@ -117,15 +135,33 @@ pub struct ResponseMetrics {
 
 impl ResponseMetrics {
     pub fn from_cache(full_cost: u64) -> Self {
-        Self { layer: Layer::Cache, tokens_used: 0, tokens_saved: full_cost, cache_hit: true, response_size: 0 }
+        Self {
+            layer: Layer::Cache,
+            tokens_used: 0,
+            tokens_saved: full_cost,
+            cache_hit: true,
+            response_size: 0,
+        }
     }
 
     pub fn from_query(layer: Layer, tokens: u64, full_cost: u64) -> Self {
-        Self { layer, tokens_used: tokens, tokens_saved: full_cost.saturating_sub(tokens), cache_hit: false, response_size: 0 }
+        Self {
+            layer,
+            tokens_used: tokens,
+            tokens_saved: full_cost.saturating_sub(tokens),
+            cache_hit: false,
+            response_size: 0,
+        }
     }
 
     pub fn full(tokens: u64) -> Self {
-        Self { layer: Layer::Full, tokens_used: tokens, tokens_saved: 0, cache_hit: false, response_size: 0 }
+        Self {
+            layer: Layer::Full,
+            tokens_used: tokens,
+            tokens_saved: 0,
+            cache_hit: false,
+            response_size: 0,
+        }
     }
 }
 
@@ -180,7 +216,12 @@ mod tests {
         }
         let warm = m.conservation_score();
 
-        assert!(warm > cold, "Conservation should improve: cold={} warm={}", cold, warm);
+        assert!(
+            warm > cold,
+            "Conservation should improve: cold={} warm={}",
+            cold,
+            warm
+        );
     }
 
     #[test]

@@ -28,12 +28,15 @@ impl AuthManager {
         if let Some(ref expected) = self.token {
             if provided_token == expected {
                 let session_id = uuid::Uuid::new_v4().to_string();
-                self.sessions.insert(session_id.clone(), SessionBinding {
-                    session_id: session_id.clone(),
-                    created_at: chrono::Utc::now().timestamp(),
-                    last_activity: chrono::Utc::now().timestamp(),
-                    permissions: Permissions::default(),
-                });
+                self.sessions.insert(
+                    session_id.clone(),
+                    SessionBinding {
+                        session_id: session_id.clone(),
+                        created_at: chrono::Utc::now().timestamp(),
+                        last_activity: chrono::Utc::now().timestamp(),
+                        permissions: Permissions::default(),
+                    },
+                );
                 self.failed_attempts = 0;
                 Ok(session_id)
             } else {
@@ -86,11 +89,19 @@ pub struct Permissions {
 
 impl Permissions {
     pub fn full() -> Self {
-        Self { can_read: true, can_write: true, can_delete: true, can_admin: true }
+        Self {
+            can_read: true,
+            can_write: true,
+            can_delete: true,
+            can_admin: true,
+        }
     }
 
     pub fn read_only() -> Self {
-        Self { can_read: true, ..Default::default() }
+        Self {
+            can_read: true,
+            ..Default::default()
+        }
     }
 }
 

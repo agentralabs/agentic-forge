@@ -1,14 +1,13 @@
 //! Tool registry — 15 MCP tools for AgenticForge.
 
-use std::sync::Arc;
-use tokio::sync::Mutex;
-use serde_json::{json, Value};
-use agentic_forge_core::engine::ForgeEngine;
-use agentic_forge_core::types::blueprint::*;
-use agentic_forge_core::types::intent::*;
-use agentic_forge_core::types::ids::*;
 use crate::session::SessionManager;
 use crate::types::{McpError, McpResult, ToolCallResult, ToolDefinition};
+use agentic_forge_core::types::blueprint::*;
+use agentic_forge_core::types::ids::*;
+use agentic_forge_core::types::intent::*;
+use serde_json::{json, Value};
+use std::sync::Arc;
+use tokio::sync::Mutex;
 
 pub const MCP_TOOL_COUNT: usize = 15;
 
@@ -17,12 +16,30 @@ pub struct ToolRegistry;
 /// Token conservation params added to all query/get/list tools.
 fn conservation_properties() -> Vec<(&'static str, Value)> {
     vec![
-        ("include_content", json!({ "type": "boolean", "default": false, "description": "Include full content in response" })),
-        ("intent", json!({ "type": "string", "enum": ["exists", "ids", "summary", "full"], "description": "Extraction scope" })),
-        ("since", json!({ "type": "integer", "description": "Delta: only changes after this timestamp" })),
-        ("token_budget", json!({ "type": "integer", "description": "Maximum token budget for response" })),
-        ("max_results", json!({ "type": "integer", "default": 10, "description": "Maximum number of results" })),
-        ("cursor", json!({ "type": "string", "description": "Pagination cursor" })),
+        (
+            "include_content",
+            json!({ "type": "boolean", "default": false, "description": "Include full content in response" }),
+        ),
+        (
+            "intent",
+            json!({ "type": "string", "enum": ["exists", "ids", "summary", "full"], "description": "Extraction scope" }),
+        ),
+        (
+            "since",
+            json!({ "type": "integer", "description": "Delta: only changes after this timestamp" }),
+        ),
+        (
+            "token_budget",
+            json!({ "type": "integer", "description": "Maximum token budget for response" }),
+        ),
+        (
+            "max_results",
+            json!({ "type": "integer", "default": 10, "description": "Maximum number of results" }),
+        ),
+        (
+            "cursor",
+            json!({ "type": "string", "description": "Pagination cursor" }),
+        ),
     ]
 }
 
@@ -246,14 +263,31 @@ impl ToolRegistry {
         }
     }
 
-    async fn blueprint_create(args: Value, session: &Arc<Mutex<SessionManager>>) -> McpResult<ToolCallResult> {
-        let name = args.get("name").and_then(|v| v.as_str()).ok_or_else(|| McpError::InvalidParams("name is required".into()))?.to_string();
-        let description = args.get("description").and_then(|v| v.as_str()).ok_or_else(|| McpError::InvalidParams("description is required".into()))?.to_string();
-        let domain_str = args.get("domain").and_then(|v| v.as_str()).ok_or_else(|| McpError::InvalidParams("domain is required".into()))?;
-        let domain = Domain::from_name(domain_str).ok_or_else(|| McpError::InvalidParams(format!("Unknown domain: {}", domain_str)))?;
+    async fn blueprint_create(
+        args: Value,
+        session: &Arc<Mutex<SessionManager>>,
+    ) -> McpResult<ToolCallResult> {
+        let name = args
+            .get("name")
+            .and_then(|v| v.as_str())
+            .ok_or_else(|| McpError::InvalidParams("name is required".into()))?
+            .to_string();
+        let description = args
+            .get("description")
+            .and_then(|v| v.as_str())
+            .ok_or_else(|| McpError::InvalidParams("description is required".into()))?
+            .to_string();
+        let domain_str = args
+            .get("domain")
+            .and_then(|v| v.as_str())
+            .ok_or_else(|| McpError::InvalidParams("domain is required".into()))?;
+        let domain = Domain::from_name(domain_str)
+            .ok_or_else(|| McpError::InvalidParams(format!("Unknown domain: {}", domain_str)))?;
 
         let mut session = session.lock().await;
-        let id = session.engine.create_blueprint(&name, &description, domain)
+        let id = session
+            .engine
+            .create_blueprint(&name, &description, domain)
             .map_err(|e| McpError::Forge(e.to_string()))?;
 
         Ok(ToolCallResult::json(&json!({
@@ -264,12 +298,23 @@ impl ToolRegistry {
         })))
     }
 
-    async fn blueprint_get(args: Value, session: &Arc<Mutex<SessionManager>>) -> McpResult<ToolCallResult> {
-        let bp_id_str = args.get("blueprint_id").and_then(|v| v.as_str()).ok_or_else(|| McpError::InvalidParams("blueprint_id is required".into()))?;
-        let bp_id: BlueprintId = bp_id_str.parse().map_err(|e: String| McpError::InvalidParams(e))?;
+    async fn blueprint_get(
+        args: Value,
+        session: &Arc<Mutex<SessionManager>>,
+    ) -> McpResult<ToolCallResult> {
+        let bp_id_str = args
+            .get("blueprint_id")
+            .and_then(|v| v.as_str())
+            .ok_or_else(|| McpError::InvalidParams("blueprint_id is required".into()))?;
+        let bp_id: BlueprintId = bp_id_str
+            .parse()
+            .map_err(|e: String| McpError::InvalidParams(e))?;
 
         let session = session.lock().await;
-        let bp = session.engine.store.load(&bp_id)
+        let bp = session
+            .engine
+            .store
+            .load(&bp_id)
             .map_err(|e| McpError::BlueprintNotFound(e.to_string()))?;
 
         Ok(ToolCallResult::json(&json!({
@@ -285,18 +330,32 @@ impl ToolRegistry {
         })))
     }
 
-    async fn blueprint_update(args: Value, session: &Arc<Mutex<SessionManager>>) -> McpResult<ToolCallResult> {
-        let bp_id_str = args.get("blueprint_id").and_then(|v| v.as_str()).ok_or_else(|| McpError::InvalidParams("blueprint_id is required".into()))?;
-        let bp_id: BlueprintId = bp_id_str.parse().map_err(|e: String| McpError::InvalidParams(e))?;
+    async fn blueprint_update(
+        args: Value,
+        session: &Arc<Mutex<SessionManager>>,
+    ) -> McpResult<ToolCallResult> {
+        let bp_id_str = args
+            .get("blueprint_id")
+            .and_then(|v| v.as_str())
+            .ok_or_else(|| McpError::InvalidParams("blueprint_id is required".into()))?;
+        let bp_id: BlueprintId = bp_id_str
+            .parse()
+            .map_err(|e: String| McpError::InvalidParams(e))?;
 
         let mut session = session.lock().await;
 
         if let Some(name) = args.get("name").and_then(|v| v.as_str()) {
-            session.engine.writer().rename_blueprint(&bp_id, name)
+            session
+                .engine
+                .writer()
+                .rename_blueprint(&bp_id, name)
                 .map_err(|e| McpError::Forge(e.to_string()))?;
         }
         if let Some(desc) = args.get("description").and_then(|v| v.as_str()) {
-            session.engine.writer().set_description(&bp_id, desc)
+            session
+                .engine
+                .writer()
+                .set_description(&bp_id, desc)
                 .map_err(|e| McpError::Forge(e.to_string()))?;
         }
         if let Some(status_str) = args.get("status").and_then(|v| v.as_str()) {
@@ -305,21 +364,40 @@ impl ToolRegistry {
                 "in_progress" => BlueprintStatus::InProgress,
                 "complete" => BlueprintStatus::Complete,
                 "validated" => BlueprintStatus::Validated,
-                _ => return Err(McpError::InvalidParams(format!("Unknown status: {}", status_str))),
+                _ => {
+                    return Err(McpError::InvalidParams(format!(
+                        "Unknown status: {}",
+                        status_str
+                    )))
+                }
             };
-            session.engine.writer().set_status(&bp_id, status)
+            session
+                .engine
+                .writer()
+                .set_status(&bp_id, status)
                 .map_err(|e| McpError::Forge(e.to_string()))?;
         }
 
         Ok(ToolCallResult::text(format!("Blueprint {} updated", bp_id)))
     }
 
-    async fn blueprint_validate(args: Value, session: &Arc<Mutex<SessionManager>>) -> McpResult<ToolCallResult> {
-        let bp_id_str = args.get("blueprint_id").and_then(|v| v.as_str()).ok_or_else(|| McpError::InvalidParams("blueprint_id is required".into()))?;
-        let bp_id: BlueprintId = bp_id_str.parse().map_err(|e: String| McpError::InvalidParams(e))?;
+    async fn blueprint_validate(
+        args: Value,
+        session: &Arc<Mutex<SessionManager>>,
+    ) -> McpResult<ToolCallResult> {
+        let bp_id_str = args
+            .get("blueprint_id")
+            .and_then(|v| v.as_str())
+            .ok_or_else(|| McpError::InvalidParams("blueprint_id is required".into()))?;
+        let bp_id: BlueprintId = bp_id_str
+            .parse()
+            .map_err(|e: String| McpError::InvalidParams(e))?;
 
         let session = session.lock().await;
-        let bp = session.engine.store.load(&bp_id)
+        let bp = session
+            .engine
+            .store
+            .load(&bp_id)
             .map_err(|e| McpError::BlueprintNotFound(e.to_string()))?;
 
         let report = agentic_forge_core::engine::validator::BlueprintValidator::validate(bp)
@@ -334,7 +412,10 @@ impl ToolRegistry {
         })))
     }
 
-    async fn blueprint_list(args: Value, session: &Arc<Mutex<SessionManager>>) -> McpResult<ToolCallResult> {
+    async fn blueprint_list(
+        args: Value,
+        session: &Arc<Mutex<SessionManager>>,
+    ) -> McpResult<ToolCallResult> {
         let session = session.lock().await;
         let reader = session.engine.reader();
 
@@ -345,45 +426,92 @@ impl ToolRegistry {
                 "complete" => BlueprintStatus::Complete,
                 "validated" => BlueprintStatus::Validated,
                 "exported" => BlueprintStatus::Exported,
-                _ => return Err(McpError::InvalidParams(format!("Unknown status: {}", status_str))),
+                _ => {
+                    return Err(McpError::InvalidParams(format!(
+                        "Unknown status: {}",
+                        status_str
+                    )))
+                }
             };
             reader.list_by_status(status)
         } else {
             reader.list_blueprints()
         };
 
-        let list: Vec<Value> = blueprints.iter().map(|bp| json!({
-            "id": bp.id.to_string(),
-            "name": bp.name,
-            "status": bp.status.name(),
-            "entities": bp.entity_count(),
-            "files": bp.file_count()
-        })).collect();
+        let list: Vec<Value> = blueprints
+            .iter()
+            .map(|bp| {
+                json!({
+                    "id": bp.id.to_string(),
+                    "name": bp.name,
+                    "status": bp.status.name(),
+                    "entities": bp.entity_count(),
+                    "files": bp.file_count()
+                })
+            })
+            .collect();
 
-        Ok(ToolCallResult::json(&json!({ "blueprints": list, "count": list.len() })))
+        Ok(ToolCallResult::json(
+            &json!({ "blueprints": list, "count": list.len() }),
+        ))
     }
 
-    async fn entity_add(args: Value, session: &Arc<Mutex<SessionManager>>) -> McpResult<ToolCallResult> {
-        let bp_id_str = args.get("blueprint_id").and_then(|v| v.as_str()).ok_or_else(|| McpError::InvalidParams("blueprint_id is required".into()))?;
-        let bp_id: BlueprintId = bp_id_str.parse().map_err(|e: String| McpError::InvalidParams(e))?;
-        let name = args.get("name").and_then(|v| v.as_str()).ok_or_else(|| McpError::InvalidParams("name is required".into()))?.to_string();
-        let desc = args.get("description").and_then(|v| v.as_str()).unwrap_or("").to_string();
-        let is_root = args.get("is_aggregate_root").and_then(|v| v.as_bool()).unwrap_or(false);
+    async fn entity_add(
+        args: Value,
+        session: &Arc<Mutex<SessionManager>>,
+    ) -> McpResult<ToolCallResult> {
+        let bp_id_str = args
+            .get("blueprint_id")
+            .and_then(|v| v.as_str())
+            .ok_or_else(|| McpError::InvalidParams("blueprint_id is required".into()))?;
+        let bp_id: BlueprintId = bp_id_str
+            .parse()
+            .map_err(|e: String| McpError::InvalidParams(e))?;
+        let name = args
+            .get("name")
+            .and_then(|v| v.as_str())
+            .ok_or_else(|| McpError::InvalidParams("name is required".into()))?
+            .to_string();
+        let desc = args
+            .get("description")
+            .and_then(|v| v.as_str())
+            .unwrap_or("")
+            .to_string();
+        let is_root = args
+            .get("is_aggregate_root")
+            .and_then(|v| v.as_bool())
+            .unwrap_or(false);
 
         let mut entity = Entity::new(&name, &desc);
         entity.is_aggregate_root = is_root;
 
         let mut session = session.lock().await;
-        let eid = session.engine.writer().add_entity(&bp_id, entity)
+        let eid = session
+            .engine
+            .writer()
+            .add_entity(&bp_id, entity)
             .map_err(|e| McpError::Forge(e.to_string()))?;
 
-        Ok(ToolCallResult::json(&json!({ "entity_id": eid.to_string(), "name": name })))
+        Ok(ToolCallResult::json(
+            &json!({ "entity_id": eid.to_string(), "name": name }),
+        ))
     }
 
-    async fn entity_infer(args: Value, session: &Arc<Mutex<SessionManager>>) -> McpResult<ToolCallResult> {
-        let bp_id_str = args.get("blueprint_id").and_then(|v| v.as_str()).ok_or_else(|| McpError::InvalidParams("blueprint_id is required".into()))?;
-        let bp_id: BlueprintId = bp_id_str.parse().map_err(|e: String| McpError::InvalidParams(e))?;
-        let description = args.get("description").and_then(|v| v.as_str()).ok_or_else(|| McpError::InvalidParams("description is required".into()))?;
+    async fn entity_infer(
+        args: Value,
+        session: &Arc<Mutex<SessionManager>>,
+    ) -> McpResult<ToolCallResult> {
+        let bp_id_str = args
+            .get("blueprint_id")
+            .and_then(|v| v.as_str())
+            .ok_or_else(|| McpError::InvalidParams("blueprint_id is required".into()))?;
+        let bp_id: BlueprintId = bp_id_str
+            .parse()
+            .map_err(|e: String| McpError::InvalidParams(e))?;
+        let description = args
+            .get("description")
+            .and_then(|v| v.as_str())
+            .ok_or_else(|| McpError::InvalidParams("description is required".into()))?;
 
         let inferred = agentic_forge_core::inventions::EntityInferrer::infer(description);
         let mut added = Vec::new();
@@ -391,26 +519,43 @@ impl ToolRegistry {
         let mut session = session.lock().await;
         for spec in &inferred {
             let entity = Entity::new(&spec.name, &spec.description);
-            match session.engine.writer().add_entity(&bp_id, entity) {
-                Ok(eid) => added.push(json!({ "entity_id": eid.to_string(), "name": spec.name })),
-                Err(_) => {} // Skip duplicates
+            if let Ok(eid) = session.engine.writer().add_entity(&bp_id, entity) {
+                added.push(json!({ "entity_id": eid.to_string(), "name": spec.name }));
             }
         }
 
-        Ok(ToolCallResult::json(&json!({ "inferred": added, "count": added.len() })))
+        Ok(ToolCallResult::json(
+            &json!({ "inferred": added, "count": added.len() }),
+        ))
     }
 
-    async fn dependency_resolve(args: Value, session: &Arc<Mutex<SessionManager>>) -> McpResult<ToolCallResult> {
-        let bp_id_str = args.get("blueprint_id").and_then(|v| v.as_str()).ok_or_else(|| McpError::InvalidParams("blueprint_id is required".into()))?;
-        let bp_id: BlueprintId = bp_id_str.parse().map_err(|e: String| McpError::InvalidParams(e))?;
+    async fn dependency_resolve(
+        args: Value,
+        session: &Arc<Mutex<SessionManager>>,
+    ) -> McpResult<ToolCallResult> {
+        let bp_id_str = args
+            .get("blueprint_id")
+            .and_then(|v| v.as_str())
+            .ok_or_else(|| McpError::InvalidParams("blueprint_id is required".into()))?;
+        let bp_id: BlueprintId = bp_id_str
+            .parse()
+            .map_err(|e: String| McpError::InvalidParams(e))?;
 
         let mut session = session.lock().await;
-        let bp = session.engine.store.load(&bp_id).map_err(|e| McpError::BlueprintNotFound(e.to_string()))?;
+        let bp = session
+            .engine
+            .store
+            .load(&bp_id)
+            .map_err(|e| McpError::BlueprintNotFound(e.to_string()))?;
         let domain = bp.domain;
         let entities: Vec<Entity> = bp.entities.clone();
         let constraints: Vec<agentic_forge_core::types::intent::Constraint> = Vec::new();
 
-        let inferred = agentic_forge_core::inventions::DependencyInferrer::infer(domain, &entities, &constraints);
+        let inferred = agentic_forge_core::inventions::DependencyInferrer::infer(
+            domain,
+            &entities,
+            &constraints,
+        );
         let mut added = 0usize;
         for dep in inferred {
             if session.engine.writer().add_dependency(&bp_id, dep).is_ok() {
@@ -418,29 +563,65 @@ impl ToolRegistry {
             }
         }
 
-        Ok(ToolCallResult::json(&json!({ "dependencies_added": added })))
+        Ok(ToolCallResult::json(
+            &json!({ "dependencies_added": added }),
+        ))
     }
 
-    async fn dependency_add(args: Value, session: &Arc<Mutex<SessionManager>>) -> McpResult<ToolCallResult> {
-        let bp_id_str = args.get("blueprint_id").and_then(|v| v.as_str()).ok_or_else(|| McpError::InvalidParams("blueprint_id is required".into()))?;
-        let bp_id: BlueprintId = bp_id_str.parse().map_err(|e: String| McpError::InvalidParams(e))?;
-        let name = args.get("name").and_then(|v| v.as_str()).ok_or_else(|| McpError::InvalidParams("name is required".into()))?.to_string();
-        let version = args.get("version").and_then(|v| v.as_str()).ok_or_else(|| McpError::InvalidParams("version is required".into()))?.to_string();
+    async fn dependency_add(
+        args: Value,
+        session: &Arc<Mutex<SessionManager>>,
+    ) -> McpResult<ToolCallResult> {
+        let bp_id_str = args
+            .get("blueprint_id")
+            .and_then(|v| v.as_str())
+            .ok_or_else(|| McpError::InvalidParams("blueprint_id is required".into()))?;
+        let bp_id: BlueprintId = bp_id_str
+            .parse()
+            .map_err(|e: String| McpError::InvalidParams(e))?;
+        let name = args
+            .get("name")
+            .and_then(|v| v.as_str())
+            .ok_or_else(|| McpError::InvalidParams("name is required".into()))?
+            .to_string();
+        let version = args
+            .get("version")
+            .and_then(|v| v.as_str())
+            .ok_or_else(|| McpError::InvalidParams("version is required".into()))?
+            .to_string();
 
         let dep = Dependency::new(&name, &version);
         let mut session = session.lock().await;
-        let did = session.engine.writer().add_dependency(&bp_id, dep)
+        let did = session
+            .engine
+            .writer()
+            .add_dependency(&bp_id, dep)
             .map_err(|e| McpError::Forge(e.to_string()))?;
 
-        Ok(ToolCallResult::json(&json!({ "dependency_id": did.to_string(), "name": name, "version": version })))
+        Ok(ToolCallResult::json(
+            &json!({ "dependency_id": did.to_string(), "name": name, "version": version }),
+        ))
     }
 
-    async fn structure_generate(args: Value, session: &Arc<Mutex<SessionManager>>) -> McpResult<ToolCallResult> {
-        let bp_id_str = args.get("blueprint_id").and_then(|v| v.as_str()).ok_or_else(|| McpError::InvalidParams("blueprint_id is required".into()))?;
-        let bp_id: BlueprintId = bp_id_str.parse().map_err(|e: String| McpError::InvalidParams(e))?;
+    async fn structure_generate(
+        args: Value,
+        session: &Arc<Mutex<SessionManager>>,
+    ) -> McpResult<ToolCallResult> {
+        let bp_id_str = args
+            .get("blueprint_id")
+            .and_then(|v| v.as_str())
+            .ok_or_else(|| McpError::InvalidParams("blueprint_id is required".into()))?;
+        let bp_id: BlueprintId = bp_id_str
+            .parse()
+            .map_err(|e: String| McpError::InvalidParams(e))?;
 
         let mut session = session.lock().await;
-        let bp = session.engine.store.load(&bp_id).map_err(|e| McpError::BlueprintNotFound(e.to_string()))?.clone();
+        let bp = session
+            .engine
+            .store
+            .load(&bp_id)
+            .map_err(|e| McpError::BlueprintNotFound(e.to_string()))?
+            .clone();
         let files = agentic_forge_core::inventions::FileStructureGenerator::generate(&bp);
         let mut added = 0usize;
         for file in files {
@@ -452,12 +633,24 @@ impl ToolRegistry {
         Ok(ToolCallResult::json(&json!({ "files_generated": added })))
     }
 
-    async fn skeleton_create(args: Value, session: &Arc<Mutex<SessionManager>>) -> McpResult<ToolCallResult> {
-        let bp_id_str = args.get("blueprint_id").and_then(|v| v.as_str()).ok_or_else(|| McpError::InvalidParams("blueprint_id is required".into()))?;
-        let bp_id: BlueprintId = bp_id_str.parse().map_err(|e: String| McpError::InvalidParams(e))?;
+    async fn skeleton_create(
+        args: Value,
+        session: &Arc<Mutex<SessionManager>>,
+    ) -> McpResult<ToolCallResult> {
+        let bp_id_str = args
+            .get("blueprint_id")
+            .and_then(|v| v.as_str())
+            .ok_or_else(|| McpError::InvalidParams("blueprint_id is required".into()))?;
+        let bp_id: BlueprintId = bp_id_str
+            .parse()
+            .map_err(|e: String| McpError::InvalidParams(e))?;
 
         let session = session.lock().await;
-        let bp = session.engine.store.load(&bp_id).map_err(|e| McpError::BlueprintNotFound(e.to_string()))?;
+        let bp = session
+            .engine
+            .store
+            .load(&bp_id)
+            .map_err(|e| McpError::BlueprintNotFound(e.to_string()))?;
         let mut skeletons = Vec::new();
         for entity in &bp.entities {
             skeletons.push(json!({
@@ -466,16 +659,30 @@ impl ToolRegistry {
             }));
         }
 
-        Ok(ToolCallResult::json(&json!({ "skeletons": skeletons, "count": skeletons.len() })))
+        Ok(ToolCallResult::json(
+            &json!({ "skeletons": skeletons, "count": skeletons.len() }),
+        ))
     }
 
-    async fn test_generate(args: Value, session: &Arc<Mutex<SessionManager>>) -> McpResult<ToolCallResult> {
-        let bp_id_str = args.get("blueprint_id").and_then(|v| v.as_str()).ok_or_else(|| McpError::InvalidParams("blueprint_id is required".into()))?;
-        let bp_id: BlueprintId = bp_id_str.parse().map_err(|e: String| McpError::InvalidParams(e))?;
+    async fn test_generate(
+        args: Value,
+        session: &Arc<Mutex<SessionManager>>,
+    ) -> McpResult<ToolCallResult> {
+        let bp_id_str = args
+            .get("blueprint_id")
+            .and_then(|v| v.as_str())
+            .ok_or_else(|| McpError::InvalidParams("blueprint_id is required".into()))?;
+        let bp_id: BlueprintId = bp_id_str
+            .parse()
+            .map_err(|e: String| McpError::InvalidParams(e))?;
 
         let mut session = session.lock().await;
         let entities: Vec<Entity> = {
-            let bp = session.engine.store.load(&bp_id).map_err(|e| McpError::BlueprintNotFound(e.to_string()))?;
+            let bp = session
+                .engine
+                .store
+                .load(&bp_id)
+                .map_err(|e| McpError::BlueprintNotFound(e.to_string()))?;
             bp.entities.clone()
         };
         let mut added = 0usize;
@@ -491,33 +698,65 @@ impl ToolRegistry {
         Ok(ToolCallResult::json(&json!({ "tests_generated": added })))
     }
 
-    async fn import_graph(args: Value, session: &Arc<Mutex<SessionManager>>) -> McpResult<ToolCallResult> {
-        let bp_id_str = args.get("blueprint_id").and_then(|v| v.as_str()).ok_or_else(|| McpError::InvalidParams("blueprint_id is required".into()))?;
-        let bp_id: BlueprintId = bp_id_str.parse().map_err(|e: String| McpError::InvalidParams(e))?;
+    async fn import_graph(
+        args: Value,
+        session: &Arc<Mutex<SessionManager>>,
+    ) -> McpResult<ToolCallResult> {
+        let bp_id_str = args
+            .get("blueprint_id")
+            .and_then(|v| v.as_str())
+            .ok_or_else(|| McpError::InvalidParams("blueprint_id is required".into()))?;
+        let bp_id: BlueprintId = bp_id_str
+            .parse()
+            .map_err(|e: String| McpError::InvalidParams(e))?;
 
         let session = session.lock().await;
-        let bp = session.engine.store.load(&bp_id).map_err(|e| McpError::BlueprintNotFound(e.to_string()))?;
+        let bp = session
+            .engine
+            .store
+            .load(&bp_id)
+            .map_err(|e| McpError::BlueprintNotFound(e.to_string()))?;
         let edges = agentic_forge_core::inventions::ImportGraphGenerator::generate(&bp.files);
 
-        let graph: Vec<Value> = edges.iter().map(|e| json!({
-            "from": e.from_file,
-            "to": e.to_file,
-            "symbols": e.imported_symbols
-        })).collect();
+        let graph: Vec<Value> = edges
+            .iter()
+            .map(|e| {
+                json!({
+                    "from": e.from_file,
+                    "to": e.to_file,
+                    "symbols": e.imported_symbols
+                })
+            })
+            .collect();
 
-        Ok(ToolCallResult::json(&json!({ "import_graph": graph, "edges": graph.len() })))
+        Ok(ToolCallResult::json(
+            &json!({ "import_graph": graph, "edges": graph.len() }),
+        ))
     }
 
-    async fn wiring_create(args: Value, session: &Arc<Mutex<SessionManager>>) -> McpResult<ToolCallResult> {
-        let bp_id_str = args.get("blueprint_id").and_then(|v| v.as_str()).ok_or_else(|| McpError::InvalidParams("blueprint_id is required".into()))?;
-        let bp_id: BlueprintId = bp_id_str.parse().map_err(|e: String| McpError::InvalidParams(e))?;
+    async fn wiring_create(
+        args: Value,
+        session: &Arc<Mutex<SessionManager>>,
+    ) -> McpResult<ToolCallResult> {
+        let bp_id_str = args
+            .get("blueprint_id")
+            .and_then(|v| v.as_str())
+            .ok_or_else(|| McpError::InvalidParams("blueprint_id is required".into()))?;
+        let bp_id: BlueprintId = bp_id_str
+            .parse()
+            .map_err(|e: String| McpError::InvalidParams(e))?;
 
         let mut session = session.lock().await;
         let (entities, layers) = {
-            let bp = session.engine.store.load(&bp_id).map_err(|e| McpError::BlueprintNotFound(e.to_string()))?;
+            let bp = session
+                .engine
+                .store
+                .load(&bp_id)
+                .map_err(|e| McpError::BlueprintNotFound(e.to_string()))?;
             (bp.entities.clone(), bp.layers.clone())
         };
-        let wirings = agentic_forge_core::inventions::WiringDiagramBuilder::build(&entities, &layers);
+        let wirings =
+            agentic_forge_core::inventions::WiringDiagramBuilder::build(&entities, &layers);
         let mut added = 0usize;
         for w in wirings {
             if session.engine.writer().add_wiring(&bp_id, w).is_ok() {
@@ -528,13 +767,27 @@ impl ToolRegistry {
         Ok(ToolCallResult::json(&json!({ "wirings_created": added })))
     }
 
-    async fn export(args: Value, session: &Arc<Mutex<SessionManager>>) -> McpResult<ToolCallResult> {
-        let bp_id_str = args.get("blueprint_id").and_then(|v| v.as_str()).ok_or_else(|| McpError::InvalidParams("blueprint_id is required".into()))?;
-        let bp_id: BlueprintId = bp_id_str.parse().map_err(|e: String| McpError::InvalidParams(e))?;
-        let format = args.get("format").and_then(|v| v.as_str()).unwrap_or("json");
+    async fn export(
+        args: Value,
+        session: &Arc<Mutex<SessionManager>>,
+    ) -> McpResult<ToolCallResult> {
+        let bp_id_str = args
+            .get("blueprint_id")
+            .and_then(|v| v.as_str())
+            .ok_or_else(|| McpError::InvalidParams("blueprint_id is required".into()))?;
+        let bp_id: BlueprintId = bp_id_str
+            .parse()
+            .map_err(|e: String| McpError::InvalidParams(e))?;
+        let format = args
+            .get("format")
+            .and_then(|v| v.as_str())
+            .unwrap_or("json");
 
         let session = session.lock().await;
-        let bp = session.engine.store.load(&bp_id)
+        let bp = session
+            .engine
+            .store
+            .load(&bp_id)
             .map_err(|e| McpError::BlueprintNotFound(e.to_string()))?;
 
         match format {

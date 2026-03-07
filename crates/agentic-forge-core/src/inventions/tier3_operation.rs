@@ -9,16 +9,31 @@ pub struct OperationInferrer;
 impl OperationInferrer {
     pub fn infer_operations(entity: &Entity) -> Vec<EntityOperation> {
         let mut ops = Vec::new();
-        ops.push(EntityOperation::new(&format!("create_{}", entity.name.to_lowercase()), OperationType::Create));
-        ops.push(EntityOperation::new(&format!("get_{}", entity.name.to_lowercase()), OperationType::Read));
-        ops.push(EntityOperation::new(&format!("update_{}", entity.name.to_lowercase()), OperationType::Update));
-        ops.push(EntityOperation::new(&format!("delete_{}", entity.name.to_lowercase()), OperationType::Delete));
-        ops.push(EntityOperation::new(&format!("list_{}s", entity.name.to_lowercase()), OperationType::Query));
+        ops.push(EntityOperation::new(
+            format!("create_{}", entity.name.to_lowercase()),
+            OperationType::Create,
+        ));
+        ops.push(EntityOperation::new(
+            format!("get_{}", entity.name.to_lowercase()),
+            OperationType::Read,
+        ));
+        ops.push(EntityOperation::new(
+            format!("update_{}", entity.name.to_lowercase()),
+            OperationType::Update,
+        ));
+        ops.push(EntityOperation::new(
+            format!("delete_{}", entity.name.to_lowercase()),
+            OperationType::Delete,
+        ));
+        ops.push(EntityOperation::new(
+            format!("list_{}s", entity.name.to_lowercase()),
+            OperationType::Query,
+        ));
 
         for field in &entity.fields {
             if field.name != "id" && field.name != "created_at" && field.name != "updated_at" {
                 ops.push(EntityOperation::new(
-                    &format!("find_{}_by_{}", entity.name.to_lowercase(), field.name),
+                    format!("find_{}_by_{}", entity.name.to_lowercase(), field.name),
                     OperationType::Query,
                 ));
             }
@@ -26,8 +41,12 @@ impl OperationInferrer {
         ops
     }
 
-    pub fn name() -> &'static str { "OperationInferrer" }
-    pub fn tier() -> u8 { 3 }
+    pub fn name() -> &'static str {
+        "OperationInferrer"
+    }
+    pub fn tier() -> u8 {
+        3
+    }
 }
 
 pub struct SignatureGenerator;
@@ -40,24 +59,54 @@ impl SignatureGenerator {
 
         match op.operation_type {
             OperationType::Create => {
-                fb.parameters.push(FunctionParam { name: "input".into(), param_type: format!("Create{}Input", entity_name), is_reference: true, is_mutable: false });
+                fb.parameters.push(FunctionParam {
+                    name: "input".into(),
+                    param_type: format!("Create{}Input", entity_name),
+                    is_reference: true,
+                    is_mutable: false,
+                });
                 fb.return_type = Some(format!("ForgeResult<{}>", entity_name));
             }
             OperationType::Read => {
-                fb.parameters.push(FunctionParam { name: "id".into(), param_type: "Uuid".into(), is_reference: true, is_mutable: false });
+                fb.parameters.push(FunctionParam {
+                    name: "id".into(),
+                    param_type: "Uuid".into(),
+                    is_reference: true,
+                    is_mutable: false,
+                });
                 fb.return_type = Some(format!("ForgeResult<{}>", entity_name));
             }
             OperationType::Update => {
-                fb.parameters.push(FunctionParam { name: "id".into(), param_type: "Uuid".into(), is_reference: true, is_mutable: false });
-                fb.parameters.push(FunctionParam { name: "input".into(), param_type: format!("Update{}Input", entity_name), is_reference: true, is_mutable: false });
+                fb.parameters.push(FunctionParam {
+                    name: "id".into(),
+                    param_type: "Uuid".into(),
+                    is_reference: true,
+                    is_mutable: false,
+                });
+                fb.parameters.push(FunctionParam {
+                    name: "input".into(),
+                    param_type: format!("Update{}Input", entity_name),
+                    is_reference: true,
+                    is_mutable: false,
+                });
                 fb.return_type = Some(format!("ForgeResult<{}>", entity_name));
             }
             OperationType::Delete => {
-                fb.parameters.push(FunctionParam { name: "id".into(), param_type: "Uuid".into(), is_reference: true, is_mutable: false });
+                fb.parameters.push(FunctionParam {
+                    name: "id".into(),
+                    param_type: "Uuid".into(),
+                    is_reference: true,
+                    is_mutable: false,
+                });
                 fb.return_type = Some("ForgeResult<()>".into());
             }
             OperationType::Query => {
-                fb.parameters.push(FunctionParam { name: "query".into(), param_type: format!("{}Query", entity_name), is_reference: true, is_mutable: false });
+                fb.parameters.push(FunctionParam {
+                    name: "query".into(),
+                    param_type: format!("{}Query", entity_name),
+                    is_reference: true,
+                    is_mutable: false,
+                });
                 fb.return_type = Some(format!("ForgeResult<Vec<{}>>", entity_name));
             }
             _ => {
@@ -69,8 +118,12 @@ impl SignatureGenerator {
         fb
     }
 
-    pub fn name() -> &'static str { "SignatureGenerator" }
-    pub fn tier() -> u8 { 3 }
+    pub fn name() -> &'static str {
+        "SignatureGenerator"
+    }
+    pub fn tier() -> u8 {
+        3
+    }
 }
 
 pub struct ErrorFlowDesigner;
@@ -82,20 +135,49 @@ impl ErrorFlowDesigner {
         error_td.derives = vec!["Error".into(), "Debug".into()];
 
         for entity in entities {
-            error_td.fields.push(TypeField { name: format!("{}NotFound", entity.name), field_type: "String".into(), visibility: Visibility::Public, doc_comment: format!("{} not found", entity.name) });
-            error_td.fields.push(TypeField { name: format!("Invalid{}", entity.name), field_type: "String".into(), visibility: Visibility::Public, doc_comment: format!("Invalid {} data", entity.name) });
-            error_td.fields.push(TypeField { name: format!("Duplicate{}", entity.name), field_type: "String".into(), visibility: Visibility::Public, doc_comment: format!("Duplicate {}", entity.name) });
+            error_td.fields.push(TypeField {
+                name: format!("{}NotFound", entity.name),
+                field_type: "String".into(),
+                visibility: Visibility::Public,
+                doc_comment: format!("{} not found", entity.name),
+            });
+            error_td.fields.push(TypeField {
+                name: format!("Invalid{}", entity.name),
+                field_type: "String".into(),
+                visibility: Visibility::Public,
+                doc_comment: format!("Invalid {} data", entity.name),
+            });
+            error_td.fields.push(TypeField {
+                name: format!("Duplicate{}", entity.name),
+                field_type: "String".into(),
+                visibility: Visibility::Public,
+                doc_comment: format!("Duplicate {}", entity.name),
+            });
         }
 
-        error_td.fields.push(TypeField { name: "Internal".into(), field_type: "String".into(), visibility: Visibility::Public, doc_comment: "Internal error".into() });
-        error_td.fields.push(TypeField { name: "Io".into(), field_type: "std::io::Error".into(), visibility: Visibility::Public, doc_comment: "IO error".into() });
+        error_td.fields.push(TypeField {
+            name: "Internal".into(),
+            field_type: "String".into(),
+            visibility: Visibility::Public,
+            doc_comment: "Internal error".into(),
+        });
+        error_td.fields.push(TypeField {
+            name: "Io".into(),
+            field_type: "std::io::Error".into(),
+            visibility: Visibility::Public,
+            doc_comment: "IO error".into(),
+        });
 
         types.push(error_td);
         types
     }
 
-    pub fn name() -> &'static str { "ErrorFlowDesigner" }
-    pub fn tier() -> u8 { 3 }
+    pub fn name() -> &'static str {
+        "ErrorFlowDesigner"
+    }
+    pub fn tier() -> u8 {
+        3
+    }
 }
 
 pub struct AsyncAnalyzer;
@@ -108,7 +190,13 @@ impl AsyncAnalyzer {
         if op.is_async {
             return true;
         }
-        matches!(op.operation_type, OperationType::Create | OperationType::Update | OperationType::Delete | OperationType::Query)
+        matches!(
+            op.operation_type,
+            OperationType::Create
+                | OperationType::Update
+                | OperationType::Delete
+                | OperationType::Query
+        )
     }
 
     pub fn analyze_concurrency_needs(entities: &[Entity], domain: Domain) -> ConcurrencyAnalysis {
@@ -118,13 +206,25 @@ impl AsyncAnalyzer {
             needs_async: matches!(domain, Domain::Web | Domain::Api | Domain::Service),
             needs_mutex,
             needs_rwlock,
-            recommended_runtime: if matches!(domain, Domain::Web | Domain::Api) { "tokio".into() } else { "none".into() },
-            thread_safety: if needs_mutex || needs_rwlock { "Arc<RwLock<T>>".into() } else { "single-threaded".into() },
+            recommended_runtime: if matches!(domain, Domain::Web | Domain::Api) {
+                "tokio".into()
+            } else {
+                "none".into()
+            },
+            thread_safety: if needs_mutex || needs_rwlock {
+                "Arc<RwLock<T>>".into()
+            } else {
+                "single-threaded".into()
+            },
         }
     }
 
-    pub fn name() -> &'static str { "AsyncAnalyzer" }
-    pub fn tier() -> u8 { 3 }
+    pub fn name() -> &'static str {
+        "AsyncAnalyzer"
+    }
+    pub fn tier() -> u8 {
+        3
+    }
 }
 
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
@@ -153,7 +253,9 @@ mod tests {
     #[test]
     fn test_operation_inferrer_with_fields() {
         let mut entity = Entity::new("User", "A user");
-        entity.fields.push(EntityField::new("email", FieldType::String));
+        entity
+            .fields
+            .push(EntityField::new("email", FieldType::String));
         let ops = OperationInferrer::infer_operations(&entity);
         assert!(ops.iter().any(|o| o.name == "find_user_by_email"));
     }

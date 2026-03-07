@@ -65,7 +65,14 @@ pub enum McpError {
 
 impl McpError {
     pub fn is_protocol_error(&self) -> bool {
-        matches!(self, Self::ParseError(_) | Self::InvalidRequest(_) | Self::MethodNotFound(_) | Self::InvalidParams(_) | Self::InternalError(_))
+        matches!(
+            self,
+            Self::ParseError(_)
+                | Self::InvalidRequest(_)
+                | Self::MethodNotFound(_)
+                | Self::InvalidParams(_)
+                | Self::InternalError(_)
+        )
     }
 
     pub fn code(&self) -> i32 {
@@ -83,7 +90,9 @@ impl McpError {
             Self::BlueprintNotFound(_) => mcp_error_codes::BLUEPRINT_NOT_FOUND,
             Self::EntityNotFound(_) => mcp_error_codes::ENTITY_NOT_FOUND,
             Self::InvalidBlueprint(_) => mcp_error_codes::INVALID_BLUEPRINT,
-            Self::Transport(_) | Self::Io(_) | Self::Json(_) | Self::Forge(_) => error_codes::INTERNAL_ERROR,
+            Self::Transport(_) | Self::Io(_) | Self::Json(_) | Self::Forge(_) => {
+                error_codes::INTERNAL_ERROR
+            }
             Self::Unauthorized => mcp_error_codes::UNAUTHORIZED,
         }
     }

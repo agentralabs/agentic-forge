@@ -7,18 +7,23 @@ pub struct McpValidator;
 
 impl McpValidator {
     pub fn require_string(params: &Value, field: &str) -> ForgeResult<String> {
-        params.get(field)
+        params
+            .get(field)
             .and_then(|v| v.as_str())
             .map(|s| s.to_string())
             .ok_or_else(|| ForgeError::MissingField(field.to_string()))
     }
 
     pub fn optional_string(params: &Value, field: &str) -> Option<String> {
-        params.get(field).and_then(|v| v.as_str()).map(|s| s.to_string())
+        params
+            .get(field)
+            .and_then(|v| v.as_str())
+            .map(|s| s.to_string())
     }
 
     pub fn require_u64(params: &Value, field: &str) -> ForgeResult<u64> {
-        params.get(field)
+        params
+            .get(field)
             .and_then(|v| v.as_u64())
             .ok_or_else(|| ForgeError::MissingField(field.to_string()))
     }
@@ -28,7 +33,8 @@ impl McpValidator {
     }
 
     pub fn require_f64(params: &Value, field: &str) -> ForgeResult<f64> {
-        params.get(field)
+        params
+            .get(field)
             .and_then(|v| v.as_f64())
             .ok_or_else(|| ForgeError::MissingField(field.to_string()))
     }
@@ -38,7 +44,8 @@ impl McpValidator {
     }
 
     pub fn require_bool(params: &Value, field: &str) -> ForgeResult<bool> {
-        params.get(field)
+        params
+            .get(field)
             .and_then(|v| v.as_bool())
             .ok_or_else(|| ForgeError::MissingField(field.to_string()))
     }
@@ -48,7 +55,8 @@ impl McpValidator {
     }
 
     pub fn require_array<'a>(params: &'a Value, field: &str) -> ForgeResult<&'a Vec<Value>> {
-        params.get(field)
+        params
+            .get(field)
             .and_then(|v| v.as_array())
             .ok_or_else(|| ForgeError::MissingField(field.to_string()))
     }
@@ -57,8 +65,12 @@ impl McpValidator {
         params.get(field).and_then(|v| v.as_array())
     }
 
-    pub fn require_object<'a>(params: &'a Value, field: &str) -> ForgeResult<&'a serde_json::Map<String, Value>> {
-        params.get(field)
+    pub fn require_object<'a>(
+        params: &'a Value,
+        field: &str,
+    ) -> ForgeResult<&'a serde_json::Map<String, Value>> {
+        params
+            .get(field)
             .and_then(|v| v.as_object())
             .ok_or_else(|| ForgeError::MissingField(field.to_string()))
     }
@@ -72,14 +84,20 @@ mod tests {
     #[test]
     fn test_require_string() {
         let params = json!({"name": "test"});
-        assert_eq!(McpValidator::require_string(&params, "name").unwrap(), "test");
+        assert_eq!(
+            McpValidator::require_string(&params, "name").unwrap(),
+            "test"
+        );
         assert!(McpValidator::require_string(&params, "missing").is_err());
     }
 
     #[test]
     fn test_optional_string() {
         let params = json!({"name": "test"});
-        assert_eq!(McpValidator::optional_string(&params, "name"), Some("test".into()));
+        assert_eq!(
+            McpValidator::optional_string(&params, "name"),
+            Some("test".into())
+        );
         assert_eq!(McpValidator::optional_string(&params, "missing"), None);
     }
 
@@ -107,7 +125,10 @@ mod tests {
     #[test]
     fn test_require_array() {
         let params = json!({"items": [1, 2, 3]});
-        assert_eq!(McpValidator::require_array(&params, "items").unwrap().len(), 3);
+        assert_eq!(
+            McpValidator::require_array(&params, "items").unwrap().len(),
+            3
+        );
     }
 
     #[test]

@@ -109,9 +109,16 @@ pub struct ServerInfo {
 impl Default for ServerCapabilities {
     fn default() -> Self {
         Self {
-            tools: Some(ToolsCapability { list_changed: Some(false) }),
-            resources: Some(ResourcesCapability { subscribe: Some(false), list_changed: Some(false) }),
-            prompts: Some(PromptsCapability { list_changed: Some(false) }),
+            tools: Some(ToolsCapability {
+                list_changed: Some(false),
+            }),
+            resources: Some(ResourcesCapability {
+                subscribe: Some(false),
+                list_changed: Some(false),
+            }),
+            prompts: Some(PromptsCapability {
+                list_changed: Some(false),
+            }),
         }
     }
 }

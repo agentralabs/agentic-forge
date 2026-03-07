@@ -10,13 +10,25 @@ pub extern "C" fn agentic_forge_version() -> *const c_char {
 }
 
 #[no_mangle]
-pub extern "C" fn agentic_forge_create_blueprint(
+/// # Safety
+/// Caller must provide valid, non-null, NUL-terminated C strings for all
+/// pointer arguments. Returned pointer must be freed with
+/// `agentic_forge_free_string`.
+pub unsafe extern "C" fn agentic_forge_create_blueprint(
     name: *const c_char,
     description: *const c_char,
     domain: *const c_char,
 ) -> *mut c_char {
+    if name.is_null() || description.is_null() || domain.is_null() {
+        return std::ptr::null_mut();
+    }
+
+    // SAFETY: pointers are checked for null above and are expected to be valid
+    // null-terminated strings from the FFI boundary.
     let name = unsafe { CStr::from_ptr(name) }.to_string_lossy();
+    // SAFETY: same preconditions as above.
     let desc = unsafe { CStr::from_ptr(description) }.to_string_lossy();
+    // SAFETY: same preconditions as above.
     let domain_str = unsafe { CStr::from_ptr(domain) }.to_string_lossy();
 
     let domain = agentic_forge_core::types::intent::Domain::from_name(&domain_str)
@@ -33,8 +45,12 @@ pub extern "C" fn agentic_forge_create_blueprint(
 }
 
 #[no_mangle]
-pub extern "C" fn agentic_forge_free_string(s: *mut c_char) {
+/// # Safety
+/// `s` must be a pointer returned by `CString::into_raw` from this library and
+/// must not be freed more than once.
+pub unsafe extern "C" fn agentic_forge_free_string(s: *mut c_char) {
     if !s.is_null() {
+        // SAFETY: `s` must come from `CString::into_raw` in this crate.
         unsafe { drop(CString::from_raw(s)) };
     }
 }
@@ -76,13 +92,15 @@ mod tests {
         let name = CString::new("Test").unwrap();
         let desc = CString::new("A test blueprint").unwrap();
         let domain = CString::new("api").unwrap();
-        let result = agentic_forge_create_blueprint(name.as_ptr(), desc.as_ptr(), domain.as_ptr());
+        let result = unsafe {
+            agentic_forge_create_blueprint(name.as_ptr(), desc.as_ptr(), domain.as_ptr())
+        };
         assert!(!result.is_null());
-        agentic_forge_free_string(result);
+        unsafe { agentic_forge_free_string(result) };
     }
 
     #[test]
     fn test_free_null_string() {
-        agentic_forge_free_string(std::ptr::null_mut());
+        unsafe { agentic_forge_free_string(std::ptr::null_mut()) };
     }
 }

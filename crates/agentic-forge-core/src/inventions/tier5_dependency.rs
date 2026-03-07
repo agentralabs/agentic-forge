@@ -7,7 +7,11 @@ use crate::types::intent::*;
 pub struct DependencyInferrer;
 
 impl DependencyInferrer {
-    pub fn infer(domain: Domain, entities: &[Entity], constraints: &[Constraint]) -> Vec<Dependency> {
+    pub fn infer(
+        domain: Domain,
+        entities: &[Entity],
+        constraints: &[Constraint],
+    ) -> Vec<Dependency> {
         let mut deps = Vec::new();
 
         // Core deps for Rust
@@ -52,28 +56,38 @@ impl DependencyInferrer {
         deps
     }
 
-    pub fn name() -> &'static str { "DependencyInferrer" }
-    pub fn tier() -> u8 { 5 }
+    pub fn name() -> &'static str {
+        "DependencyInferrer"
+    }
+    pub fn tier() -> u8 {
+        5
+    }
 }
 
 pub struct VersionResolver;
 
 impl VersionResolver {
     pub fn resolve(deps: &[Dependency]) -> Vec<ResolvedDependency> {
-        deps.iter().map(|d| {
-            let compatible = Self::check_compatibility(&d.name, &d.version);
-            ResolvedDependency {
-                name: d.name.clone(),
-                requested_version: d.version.clone(),
-                resolved_version: d.version.clone(),
-                is_compatible: compatible,
-                conflicts: Vec::new(),
-            }
-        }).collect()
+        deps.iter()
+            .map(|d| {
+                let compatible = Self::check_compatibility(&d.name, &d.version);
+                ResolvedDependency {
+                    name: d.name.clone(),
+                    requested_version: d.version.clone(),
+                    resolved_version: d.version.clone(),
+                    is_compatible: compatible,
+                    conflicts: Vec::new(),
+                }
+            })
+            .collect()
     }
 
     fn check_compatibility(name: &str, version: &str) -> bool {
-        let major: u32 = version.split('.').next().and_then(|v| v.parse().ok()).unwrap_or(0);
+        let major: u32 = version
+            .split('.')
+            .next()
+            .and_then(|v| v.parse().ok())
+            .unwrap_or(0);
         match name {
             "serde" => major >= 1,
             "tokio" => major >= 1,
@@ -82,8 +96,12 @@ impl VersionResolver {
         }
     }
 
-    pub fn name() -> &'static str { "VersionResolver" }
-    pub fn tier() -> u8 { 5 }
+    pub fn name() -> &'static str {
+        "VersionResolver"
+    }
+    pub fn tier() -> u8 {
+        5
+    }
 }
 
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
@@ -106,17 +124,51 @@ impl ApiSpecExtractor {
         let mut endpoints = Vec::new();
         for entity in entities {
             let base = format!("/api/{}", entity.name.to_lowercase());
-            endpoints.push(ApiEndpoint { method: "GET".into(), path: base.clone(), description: format!("List all {}s", entity.name.to_lowercase()), request_body: None, response_type: format!("Vec<{}>", entity.name) });
-            endpoints.push(ApiEndpoint { method: "POST".into(), path: base.clone(), description: format!("Create a {}", entity.name.to_lowercase()), request_body: Some(format!("Create{}Input", entity.name)), response_type: entity.name.clone() });
-            endpoints.push(ApiEndpoint { method: "GET".into(), path: format!("{}/:id", base), description: format!("Get {} by ID", entity.name.to_lowercase()), request_body: None, response_type: entity.name.clone() });
-            endpoints.push(ApiEndpoint { method: "PUT".into(), path: format!("{}/:id", base), description: format!("Update {}", entity.name.to_lowercase()), request_body: Some(format!("Update{}Input", entity.name)), response_type: entity.name.clone() });
-            endpoints.push(ApiEndpoint { method: "DELETE".into(), path: format!("{}/:id", base), description: format!("Delete {}", entity.name.to_lowercase()), request_body: None, response_type: "()".into() });
+            endpoints.push(ApiEndpoint {
+                method: "GET".into(),
+                path: base.clone(),
+                description: format!("List all {}s", entity.name.to_lowercase()),
+                request_body: None,
+                response_type: format!("Vec<{}>", entity.name),
+            });
+            endpoints.push(ApiEndpoint {
+                method: "POST".into(),
+                path: base.clone(),
+                description: format!("Create a {}", entity.name.to_lowercase()),
+                request_body: Some(format!("Create{}Input", entity.name)),
+                response_type: entity.name.clone(),
+            });
+            endpoints.push(ApiEndpoint {
+                method: "GET".into(),
+                path: format!("{}/:id", base),
+                description: format!("Get {} by ID", entity.name.to_lowercase()),
+                request_body: None,
+                response_type: entity.name.clone(),
+            });
+            endpoints.push(ApiEndpoint {
+                method: "PUT".into(),
+                path: format!("{}/:id", base),
+                description: format!("Update {}", entity.name.to_lowercase()),
+                request_body: Some(format!("Update{}Input", entity.name)),
+                response_type: entity.name.clone(),
+            });
+            endpoints.push(ApiEndpoint {
+                method: "DELETE".into(),
+                path: format!("{}/:id", base),
+                description: format!("Delete {}", entity.name.to_lowercase()),
+                request_body: None,
+                response_type: "()".into(),
+            });
         }
         endpoints
     }
 
-    pub fn name() -> &'static str { "ApiSpecExtractor" }
-    pub fn tier() -> u8 { 5 }
+    pub fn name() -> &'static str {
+        "ApiSpecExtractor"
+    }
+    pub fn tier() -> u8 {
+        5
+    }
 }
 
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
@@ -133,7 +185,8 @@ pub struct ConflictResolver;
 impl ConflictResolver {
     pub fn resolve(deps: &[Dependency]) -> Vec<DependencyConflict> {
         let mut conflicts = Vec::new();
-        let mut seen: std::collections::HashMap<String, Vec<&Dependency>> = std::collections::HashMap::new();
+        let mut seen: std::collections::HashMap<String, Vec<&Dependency>> =
+            std::collections::HashMap::new();
 
         for dep in deps {
             seen.entry(dep.name.clone()).or_default().push(dep);
@@ -153,8 +206,12 @@ impl ConflictResolver {
         conflicts
     }
 
-    pub fn name() -> &'static str { "ConflictResolver" }
-    pub fn tier() -> u8 { 5 }
+    pub fn name() -> &'static str {
+        "ConflictResolver"
+    }
+    pub fn tier() -> u8 {
+        5
+    }
 }
 
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
@@ -193,14 +250,21 @@ mod tests {
 
     #[test]
     fn test_dependency_inferrer_security() {
-        let constraints = vec![Constraint::new("auth", ConstraintType::Security("jwt".into()), "JWT auth")];
+        let constraints = vec![Constraint::new(
+            "auth",
+            ConstraintType::Security("jwt".into()),
+            "JWT auth",
+        )];
         let deps = DependencyInferrer::infer(Domain::Api, &[], &constraints);
         assert!(deps.iter().any(|d| d.name == "jsonwebtoken"));
     }
 
     #[test]
     fn test_version_resolver() {
-        let deps = vec![Dependency::new("serde", "1.0"), Dependency::new("tokio", "1.35")];
+        let deps = vec![
+            Dependency::new("serde", "1.0"),
+            Dependency::new("tokio", "1.35"),
+        ];
         let resolved = VersionResolver::resolve(&deps);
         assert!(resolved.iter().all(|r| r.is_compatible));
     }
@@ -222,14 +286,20 @@ mod tests {
 
     #[test]
     fn test_conflict_resolver_no_conflicts() {
-        let deps = vec![Dependency::new("serde", "1.0"), Dependency::new("tokio", "1.35")];
+        let deps = vec![
+            Dependency::new("serde", "1.0"),
+            Dependency::new("tokio", "1.35"),
+        ];
         let conflicts = ConflictResolver::resolve(&deps);
         assert!(conflicts.is_empty());
     }
 
     #[test]
     fn test_conflict_resolver_with_conflicts() {
-        let deps = vec![Dependency::new("serde", "1.0"), Dependency::new("serde", "2.0")];
+        let deps = vec![
+            Dependency::new("serde", "1.0"),
+            Dependency::new("serde", "2.0"),
+        ];
         let conflicts = ConflictResolver::resolve(&deps);
         assert_eq!(conflicts.len(), 1);
         assert_eq!(conflicts[0].dependency, "serde");

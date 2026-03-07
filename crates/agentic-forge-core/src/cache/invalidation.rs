@@ -1,9 +1,9 @@
 //! Cache invalidation on mutation.
 
+use super::lru::Cache;
 use std::collections::HashSet;
 use std::hash::Hash;
 use std::sync::RwLock;
-use super::lru::Cache;
 
 pub struct CacheInvalidator<K: Hash + Eq + Clone> {
     dependencies: RwLock<std::collections::HashMap<K, HashSet<K>>>,

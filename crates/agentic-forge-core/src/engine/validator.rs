@@ -31,13 +31,25 @@ impl BlueprintValidator {
             report.add_warning("Blueprint description is empty");
         }
         if bp.entities.len() > MAX_ENTITIES {
-            report.add_error(&format!("Entity count {} exceeds maximum {}", bp.entities.len(), MAX_ENTITIES));
+            report.add_error(&format!(
+                "Entity count {} exceeds maximum {}",
+                bp.entities.len(),
+                MAX_ENTITIES
+            ));
         }
         if bp.files.len() > MAX_FILES {
-            report.add_error(&format!("File count {} exceeds maximum {}", bp.files.len(), MAX_FILES));
+            report.add_error(&format!(
+                "File count {} exceeds maximum {}",
+                bp.files.len(),
+                MAX_FILES
+            ));
         }
         if bp.dependencies.len() > MAX_DEPENDENCIES {
-            report.add_error(&format!("Dependency count {} exceeds maximum {}", bp.dependencies.len(), MAX_DEPENDENCIES));
+            report.add_error(&format!(
+                "Dependency count {} exceeds maximum {}",
+                bp.dependencies.len(),
+                MAX_DEPENDENCIES
+            ));
         }
         if bp.entities.is_empty() {
             report.add_warning("Blueprint has no entities");
@@ -63,16 +75,25 @@ impl BlueprintValidator {
             let mut field_names = HashSet::new();
             for field in &entity.fields {
                 if field.name.is_empty() {
-                    report.add_error(&format!("Entity '{}' has field with empty name", entity.name));
+                    report.add_error(&format!(
+                        "Entity '{}' has field with empty name",
+                        entity.name
+                    ));
                 }
                 if !field_names.insert(&field.name) {
-                    report.add_error(&format!("Entity '{}' has duplicate field: {}", entity.name, field.name));
+                    report.add_error(&format!(
+                        "Entity '{}' has duplicate field: {}",
+                        entity.name, field.name
+                    ));
                 }
             }
 
             for rel in &entity.relationships {
                 if rel.target_entity.is_empty() {
-                    report.add_error(&format!("Entity '{}' has relationship with empty target", entity.name));
+                    report.add_error(&format!(
+                        "Entity '{}' has relationship with empty target",
+                        entity.name
+                    ));
                 }
                 if !bp.entities.iter().any(|e| e.name == rel.target_entity) {
                     report.add_warning(&format!(
@@ -216,8 +237,10 @@ mod tests {
     #[test]
     fn test_validate_duplicate_files() {
         let mut bp = Blueprint::new("Test", "A test", Domain::Api);
-        bp.files.push(FileBlueprint::new("src/main.rs", FileType::Source));
-        bp.files.push(FileBlueprint::new("src/main.rs", FileType::Source));
+        bp.files
+            .push(FileBlueprint::new("src/main.rs", FileType::Source));
+        bp.files
+            .push(FileBlueprint::new("src/main.rs", FileType::Source));
         let report = BlueprintValidator::validate(&bp).unwrap();
         assert!(!report.is_valid);
     }
@@ -270,7 +293,10 @@ mod tests {
     fn test_validate_entity_empty_field_name() {
         let mut bp = Blueprint::new("Test", "A test", Domain::Api);
         let mut entity = Entity::new("User", "A");
-        entity.fields.push(EntityField::new("", crate::types::intent::FieldType::String));
+        entity.fields.push(EntityField::new(
+            "",
+            crate::types::intent::FieldType::String,
+        ));
         bp.entities.push(entity);
         let report = BlueprintValidator::validate(&bp).unwrap();
         assert!(report.errors.iter().any(|e| e.contains("empty name")));

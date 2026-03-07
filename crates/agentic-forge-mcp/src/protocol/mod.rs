@@ -1,11 +1,11 @@
 //! MCP protocol handler.
 
-use std::sync::Arc;
-use tokio::sync::Mutex;
-use serde_json::{json, Value};
 use crate::session::SessionManager;
 use crate::tools::registry::ToolRegistry;
 use crate::types::*;
+use serde_json::{json, Value};
+use std::sync::Arc;
+use tokio::sync::Mutex;
 
 pub struct ProtocolHandler {
     session: Arc<Mutex<SessionManager>>,
@@ -17,8 +17,15 @@ impl ProtocolHandler {
     }
 
     pub async fn handle_message(&self, msg: Value) -> McpResult<Value> {
-        let method = msg.get("method").and_then(|v| v.as_str()).ok_or_else(|| McpError::InvalidRequest("missing method".into()))?;
-        let id = msg.get("id").cloned().and_then(|v| serde_json::from_value::<RequestId>(v).ok()).unwrap_or(RequestId::Null);
+        let method = msg
+            .get("method")
+            .and_then(|v| v.as_str())
+            .ok_or_else(|| McpError::InvalidRequest("missing method".into()))?;
+        let id = msg
+            .get("id")
+            .cloned()
+            .and_then(|v| serde_json::from_value::<RequestId>(v).ok())
+            .unwrap_or(RequestId::Null);
         let params = msg.get("params").cloned();
 
         match method {
@@ -66,7 +73,10 @@ impl ProtocolHandler {
 
     async fn handle_tools_call(&self, id: RequestId, params: Option<Value>) -> McpResult<Value> {
         let params = params.ok_or_else(|| McpError::InvalidParams("missing params".into()))?;
-        let name = params.get("name").and_then(|v| v.as_str()).ok_or_else(|| McpError::InvalidParams("missing tool name".into()))?;
+        let name = params
+            .get("name")
+            .and_then(|v| v.as_str())
+            .ok_or_else(|| McpError::InvalidParams("missing tool name".into()))?;
         let arguments = params.get("arguments").cloned();
 
         match ToolRegistry::call(name, arguments, &self.session).await {

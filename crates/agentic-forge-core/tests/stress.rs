@@ -1,7 +1,7 @@
 //! Stress tests — concurrent access, large datasets, performance bounds.
 
-use agentic_forge_core::engine::ForgeEngine;
 use agentic_forge_core::engine::validator::BlueprintValidator;
+use agentic_forge_core::engine::ForgeEngine;
 use agentic_forge_core::format::{ForgeReader, ForgeWriter};
 use agentic_forge_core::inventions::*;
 use agentic_forge_core::storage::BlueprintStore;
@@ -18,15 +18,21 @@ fn test_stress_100_blueprints() {
     let start = Instant::now();
     let mut ids = Vec::new();
     for i in 0..100 {
-        let id = engine.create_blueprint(
-            &format!("Project_{}", i),
-            &format!("Description for project {}", i),
-            Domain::Api,
-        ).unwrap();
+        let id = engine
+            .create_blueprint(
+                &format!("Project_{}", i),
+                &format!("Description for project {}", i),
+                Domain::Api,
+            )
+            .unwrap();
         ids.push(id);
     }
     let elapsed = start.elapsed();
-    assert!(elapsed.as_millis() < 1000, "100 blueprints took {}ms, want <1000ms", elapsed.as_millis());
+    assert!(
+        elapsed.as_millis() < 1000,
+        "100 blueprints took {}ms, want <1000ms",
+        elapsed.as_millis()
+    );
     assert_eq!(engine.blueprint_count(), 100);
 
     // Verify all accessible
@@ -39,17 +45,26 @@ fn test_stress_100_blueprints() {
 #[test]
 fn test_stress_1000_entities_in_one_blueprint() {
     let mut engine = ForgeEngine::new();
-    let id = engine.create_blueprint("Big", "stress test", Domain::Api).unwrap();
+    let id = engine
+        .create_blueprint("Big", "stress test", Domain::Api)
+        .unwrap();
 
     let start = Instant::now();
     for i in 0..1000 {
-        engine.writer().add_entity(&id, Entity::new(
-            &format!("Entity_{}", i),
-            &format!("Entity number {}", i),
-        )).unwrap();
+        engine
+            .writer()
+            .add_entity(
+                &id,
+                Entity::new(&format!("Entity_{}", i), &format!("Entity number {}", i)),
+            )
+            .unwrap();
     }
     let elapsed = start.elapsed();
-    assert!(elapsed.as_millis() < 5000, "1000 entities took {}ms, want <5000ms", elapsed.as_millis());
+    assert!(
+        elapsed.as_millis() < 5000,
+        "1000 entities took {}ms, want <5000ms",
+        elapsed.as_millis()
+    );
 
     let bp = engine.store.load(&id).unwrap();
     assert_eq!(bp.entity_count(), 1000);
@@ -58,17 +73,29 @@ fn test_stress_1000_entities_in_one_blueprint() {
 #[test]
 fn test_stress_1000_files_in_one_blueprint() {
     let mut engine = ForgeEngine::new();
-    let id = engine.create_blueprint("ManyFiles", "stress test", Domain::Api).unwrap();
+    let id = engine
+        .create_blueprint("ManyFiles", "stress test", Domain::Api)
+        .unwrap();
 
     let start = Instant::now();
     for i in 0..1000 {
-        engine.writer().add_file(&id, FileBlueprint::new(
-            &format!("src/module_{}/file_{}.rs", i / 10, i),
-            FileType::Source,
-        )).unwrap();
+        engine
+            .writer()
+            .add_file(
+                &id,
+                FileBlueprint::new(
+                    &format!("src/module_{}/file_{}.rs", i / 10, i),
+                    FileType::Source,
+                ),
+            )
+            .unwrap();
     }
     let elapsed = start.elapsed();
-    assert!(elapsed.as_millis() < 5000, "1000 files took {}ms", elapsed.as_millis());
+    assert!(
+        elapsed.as_millis() < 5000,
+        "1000 files took {}ms",
+        elapsed.as_millis()
+    );
 
     let bp = engine.store.load(&id).unwrap();
     assert_eq!(bp.file_count(), 1000);
@@ -77,13 +104,18 @@ fn test_stress_1000_files_in_one_blueprint() {
 #[test]
 fn test_stress_500_dependencies() {
     let mut engine = ForgeEngine::new();
-    let id = engine.create_blueprint("ManyDeps", "stress test", Domain::Api).unwrap();
+    let id = engine
+        .create_blueprint("ManyDeps", "stress test", Domain::Api)
+        .unwrap();
 
     for i in 0..500 {
-        engine.writer().add_dependency(&id, Dependency::new(
-            &format!("dep-{}", i),
-            &format!("{}.0.0", i),
-        )).unwrap();
+        engine
+            .writer()
+            .add_dependency(
+                &id,
+                Dependency::new(&format!("dep-{}", i), &format!("{}.0.0", i)),
+            )
+            .unwrap();
     }
 
     let bp = engine.store.load(&id).unwrap();
@@ -93,14 +125,22 @@ fn test_stress_500_dependencies() {
 #[test]
 fn test_stress_500_test_cases() {
     let mut engine = ForgeEngine::new();
-    let id = engine.create_blueprint("ManyTests", "stress test", Domain::Api).unwrap();
+    let id = engine
+        .create_blueprint("ManyTests", "stress test", Domain::Api)
+        .unwrap();
 
     for i in 0..500 {
-        engine.writer().add_test_case(&id, TestCase::new(
-            &format!("test_{}", i),
-            TestType::Unit,
-            &format!("target_{}", i),
-        )).unwrap();
+        engine
+            .writer()
+            .add_test_case(
+                &id,
+                TestCase::new(
+                    &format!("test_{}", i),
+                    TestType::Unit,
+                    &format!("target_{}", i),
+                ),
+            )
+            .unwrap();
     }
 
     let bp = engine.store.load(&id).unwrap();
@@ -114,24 +154,32 @@ fn test_stress_create_delete_cycle() {
     let mut engine = ForgeEngine::new();
 
     for i in 0..200 {
-        let id = engine.create_blueprint(&format!("Temp_{}", i), "temp", Domain::Cli).unwrap();
+        let id = engine
+            .create_blueprint(&format!("Temp_{}", i), "temp", Domain::Cli)
+            .unwrap();
         engine.writer().delete_blueprint(&id).unwrap();
     }
-    assert_eq!(engine.blueprint_count(), 0, "All blueprints should be deleted");
+    assert_eq!(
+        engine.blueprint_count(),
+        0,
+        "All blueprints should be deleted"
+    );
 }
 
 #[test]
 fn test_stress_add_remove_entities_cycle() {
     let mut engine = ForgeEngine::new();
-    let id = engine.create_blueprint("Cycle", "cycle test", Domain::Api).unwrap();
+    let id = engine
+        .create_blueprint("Cycle", "cycle test", Domain::Api)
+        .unwrap();
 
     for round in 0..50 {
         let mut eids = Vec::new();
         for j in 0..10 {
-            let eid = engine.writer().add_entity(&id, Entity::new(
-                &format!("E_{}_{}", round, j),
-                "temp",
-            )).unwrap();
+            let eid = engine
+                .writer()
+                .add_entity(&id, Entity::new(&format!("E_{}_{}", round, j), "temp"))
+                .unwrap();
             eids.push(eid);
         }
         for eid in eids {
@@ -140,7 +188,11 @@ fn test_stress_add_remove_entities_cycle() {
     }
 
     let bp = engine.store.load(&id).unwrap();
-    assert_eq!(bp.entity_count(), 0, "All entities should be removed after cycles");
+    assert_eq!(
+        bp.entity_count(),
+        0,
+        "All entities should be removed after cycles"
+    );
 }
 
 // ── Format stress ────────────────────────────────────────────────────
@@ -153,15 +205,21 @@ fn test_stress_format_large_roundtrip() {
         for j in 0..50 {
             let mut entity = Entity::new(&format!("E_{}_{}", i, j), "ent");
             for k in 0..5 {
-                entity.fields.push(EntityField::new(&format!("f_{}", k), FieldType::String));
+                entity
+                    .fields
+                    .push(EntityField::new(&format!("f_{}", k), FieldType::String));
             }
             bp.entities.push(entity);
         }
         for j in 0..20 {
-            bp.files.push(FileBlueprint::new(&format!("src/mod_{}/file_{}.rs", i, j), FileType::Source));
+            bp.files.push(FileBlueprint::new(
+                &format!("src/mod_{}/file_{}.rs", i, j),
+                FileType::Source,
+            ));
         }
         for j in 0..10 {
-            bp.dependencies.push(Dependency::new(&format!("dep_{}_{}", i, j), "1.0"));
+            bp.dependencies
+                .push(Dependency::new(&format!("dep_{}_{}", i, j), "1.0"));
         }
         blueprints.push(bp);
     }
@@ -175,8 +233,16 @@ fn test_stress_format_large_roundtrip() {
     let read_elapsed = start.elapsed();
 
     assert_eq!(loaded.len(), 20);
-    assert!(write_elapsed.as_millis() < 5000, "Write took {}ms", write_elapsed.as_millis());
-    assert!(read_elapsed.as_millis() < 5000, "Read took {}ms", read_elapsed.as_millis());
+    assert!(
+        write_elapsed.as_millis() < 5000,
+        "Write took {}ms",
+        write_elapsed.as_millis()
+    );
+    assert!(
+        read_elapsed.as_millis() < 5000,
+        "Read took {}ms",
+        read_elapsed.as_millis()
+    );
 
     // Verify data integrity
     for (orig, load) in blueprints.iter().zip(loaded.iter()) {
@@ -212,7 +278,9 @@ fn test_stress_store_persist_reload_many() {
 
     let mut store = BlueprintStore::with_path(&path);
     for i in 0..100 {
-        store.save(Blueprint::new(&format!("BP_{}", i), "test", Domain::Api)).unwrap();
+        store
+            .save(Blueprint::new(&format!("BP_{}", i), "test", Domain::Api))
+            .unwrap();
     }
     store.persist().unwrap();
 
@@ -227,7 +295,9 @@ fn test_stress_store_repeated_persist() {
 
     let mut store = BlueprintStore::with_path(&path);
     for round in 0..20 {
-        store.save(Blueprint::new(&format!("R_{}", round), "test", Domain::Cli)).unwrap();
+        store
+            .save(Blueprint::new(&format!("R_{}", round), "test", Domain::Cli))
+            .unwrap();
         store.persist().unwrap();
     }
 
@@ -243,7 +313,11 @@ fn test_stress_full_invention_pipeline() {
 
     // Tier 1: Decomposition
     let layers = LayerDecomposer::decompose(Domain::Api);
-    let intent = IntentSpec::new("StressProject", "A large API with many entities", Domain::Api);
+    let intent = IntentSpec::new(
+        "StressProject",
+        "A large API with many entities",
+        Domain::Api,
+    );
     let concerns = ConcernAnalyzer::analyze(&intent);
 
     // Tier 2: Entity inference
@@ -316,7 +390,11 @@ fn test_stress_full_invention_pipeline() {
     assert!(!integration_plans.is_empty());
     assert!(!mocks.is_empty());
 
-    assert!(elapsed.as_millis() < 2000, "Full pipeline took {}ms, want <2000ms", elapsed.as_millis());
+    assert!(
+        elapsed.as_millis() < 2000,
+        "Full pipeline took {}ms, want <2000ms",
+        elapsed.as_millis()
+    );
 }
 
 #[test]
@@ -339,22 +417,32 @@ fn test_stress_validate_large_blueprint() {
     for i in 0..200 {
         let mut entity = Entity::new(&format!("Entity_{}", i), "entity");
         for j in 0..10 {
-            entity.fields.push(EntityField::new(&format!("field_{}", j), FieldType::String));
+            entity
+                .fields
+                .push(EntityField::new(&format!("field_{}", j), FieldType::String));
         }
         bp.entities.push(entity);
     }
     for i in 0..500 {
-        bp.files.push(FileBlueprint::new(&format!("src/file_{}.rs", i), FileType::Source));
+        bp.files.push(FileBlueprint::new(
+            &format!("src/file_{}.rs", i),
+            FileType::Source,
+        ));
     }
     for i in 0..100 {
-        bp.dependencies.push(Dependency::new(&format!("dep_{}", i), "1.0"));
+        bp.dependencies
+            .push(Dependency::new(&format!("dep_{}", i), "1.0"));
     }
 
     let start = Instant::now();
     let report = BlueprintValidator::validate(&bp).unwrap();
     let elapsed = start.elapsed();
 
-    assert!(elapsed.as_millis() < 1000, "Validation took {}ms", elapsed.as_millis());
+    assert!(
+        elapsed.as_millis() < 1000,
+        "Validation took {}ms",
+        elapsed.as_millis()
+    );
     // Should be valid since all names are unique and non-empty
     assert!(report.is_valid, "Errors: {:?}", report.errors);
 }
@@ -392,7 +480,13 @@ fn test_stress_mixed_id_types() {
 fn test_stress_query_search() {
     let mut engine = ForgeEngine::new();
     for i in 0..100 {
-        engine.create_blueprint(&format!("Project_{}", i), &format!("desc {}", i), Domain::Api).unwrap();
+        engine
+            .create_blueprint(
+                &format!("Project_{}", i),
+                &format!("desc {}", i),
+                Domain::Api,
+            )
+            .unwrap();
     }
 
     let start = Instant::now();
@@ -402,7 +496,11 @@ fn test_stress_query_search() {
         assert!(!results.is_empty());
     }
     let elapsed = start.elapsed();
-    assert!(elapsed.as_millis() < 5000, "1000 searches took {}ms", elapsed.as_millis());
+    assert!(
+        elapsed.as_millis() < 5000,
+        "1000 searches took {}ms",
+        elapsed.as_millis()
+    );
 }
 
 #[test]
@@ -410,9 +508,14 @@ fn test_stress_blueprint_summary_many() {
     let mut engine = ForgeEngine::new();
     let mut ids = Vec::new();
     for i in 0..50 {
-        let id = engine.create_blueprint(&format!("P_{}", i), "d", Domain::Api).unwrap();
+        let id = engine
+            .create_blueprint(&format!("P_{}", i), "d", Domain::Api)
+            .unwrap();
         for j in 0..5 {
-            engine.writer().add_entity(&id, Entity::new(&format!("E_{}_{}", i, j), "e")).unwrap();
+            engine
+                .writer()
+                .add_entity(&id, Entity::new(&format!("E_{}_{}", i, j), "e"))
+                .unwrap();
         }
         ids.push(id);
     }
@@ -424,5 +527,9 @@ fn test_stress_blueprint_summary_many() {
         assert_eq!(summary.entity_count, 5);
     }
     let elapsed = start.elapsed();
-    assert!(elapsed.as_millis() < 2000, "50 summaries took {}ms", elapsed.as_millis());
+    assert!(
+        elapsed.as_millis() < 2000,
+        "50 summaries took {}ms",
+        elapsed.as_millis()
+    );
 }

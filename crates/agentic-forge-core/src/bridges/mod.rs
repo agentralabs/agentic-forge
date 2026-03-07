@@ -1,64 +1,120 @@
 //! Bridge traits for sister integration.
 
 pub trait ForgeBridge: Send + Sync {
-    fn forge_version(&self) -> &str { "0.1.0" }
-    fn generate_blueprint(&self, _intent: &str) -> Result<String, String> { Ok(String::new()) }
-    fn validate_blueprint(&self, _blueprint_json: &str) -> Result<bool, String> { Ok(true) }
-    fn export_blueprint(&self, _blueprint_id: &str, _format: &str) -> Result<Vec<u8>, String> { Ok(vec![]) }
+    fn forge_version(&self) -> &str {
+        "0.1.0"
+    }
+    fn generate_blueprint(&self, _intent: &str) -> Result<String, String> {
+        Ok(String::new())
+    }
+    fn validate_blueprint(&self, _blueprint_json: &str) -> Result<bool, String> {
+        Ok(true)
+    }
+    fn export_blueprint(&self, _blueprint_id: &str, _format: &str) -> Result<Vec<u8>, String> {
+        Ok(vec![])
+    }
 }
 
 pub trait AegisBridge: Send + Sync {
-    fn check_security(&self, _blueprint_json: &str) -> Result<Vec<String>, String> { Ok(vec![]) }
-    fn apply_security_policy(&self, _policy: &str) -> Result<(), String> { Ok(()) }
-    fn audit_blueprint(&self, _blueprint_id: &str) -> Result<String, String> { Ok("pass".into()) }
+    fn check_security(&self, _blueprint_json: &str) -> Result<Vec<String>, String> {
+        Ok(vec![])
+    }
+    fn apply_security_policy(&self, _policy: &str) -> Result<(), String> {
+        Ok(())
+    }
+    fn audit_blueprint(&self, _blueprint_id: &str) -> Result<String, String> {
+        Ok("pass".into())
+    }
 }
 
 pub trait EvolveBridge: Send + Sync {
-    fn track_evolution(&self, _blueprint_id: &str, _change: &str) -> Result<(), String> { Ok(()) }
-    fn get_evolution_history(&self, _blueprint_id: &str) -> Result<Vec<String>, String> { Ok(vec![]) }
-    fn suggest_improvements(&self, _blueprint_json: &str) -> Result<Vec<String>, String> { Ok(vec![]) }
+    fn track_evolution(&self, _blueprint_id: &str, _change: &str) -> Result<(), String> {
+        Ok(())
+    }
+    fn get_evolution_history(&self, _blueprint_id: &str) -> Result<Vec<String>, String> {
+        Ok(vec![])
+    }
+    fn suggest_improvements(&self, _blueprint_json: &str) -> Result<Vec<String>, String> {
+        Ok(vec![])
+    }
 }
 
 pub trait VeritasBridge: Send + Sync {
-    fn verify_blueprint(&self, _blueprint_json: &str) -> Result<bool, String> { Ok(true) }
-    fn check_consistency(&self, _blueprint_id: &str) -> Result<Vec<String>, String> { Ok(vec![]) }
-    fn validate_contracts(&self, _contracts: &str) -> Result<bool, String> { Ok(true) }
+    fn verify_blueprint(&self, _blueprint_json: &str) -> Result<bool, String> {
+        Ok(true)
+    }
+    fn check_consistency(&self, _blueprint_id: &str) -> Result<Vec<String>, String> {
+        Ok(vec![])
+    }
+    fn validate_contracts(&self, _contracts: &str) -> Result<bool, String> {
+        Ok(true)
+    }
 }
 
 pub trait MemoryBridge: Send + Sync {
-    fn store_blueprint_memory(&self, _blueprint_id: &str, _data: &str) -> Result<(), String> { Ok(()) }
-    fn recall_blueprint(&self, _query: &str) -> Result<Option<String>, String> { Ok(None) }
-    fn link_memory(&self, _blueprint_id: &str, _memory_id: &str) -> Result<(), String> { Ok(()) }
+    fn store_blueprint_memory(&self, _blueprint_id: &str, _data: &str) -> Result<(), String> {
+        Ok(())
+    }
+    fn recall_blueprint(&self, _query: &str) -> Result<Option<String>, String> {
+        Ok(None)
+    }
+    fn link_memory(&self, _blueprint_id: &str, _memory_id: &str) -> Result<(), String> {
+        Ok(())
+    }
 }
 
 pub trait IdentityBridge: Send + Sync {
-    fn authenticate(&self, _token: &str) -> Result<bool, String> { Ok(true) }
-    fn authorize(&self, _action: &str, _resource: &str) -> Result<bool, String> { Ok(true) }
+    fn authenticate(&self, _token: &str) -> Result<bool, String> {
+        Ok(true)
+    }
+    fn authorize(&self, _action: &str, _resource: &str) -> Result<bool, String> {
+        Ok(true)
+    }
 }
 
 pub trait TimeBridge: Send + Sync {
-    fn link_deadline(&self, _blueprint_id: &str, _deadline_id: &str) -> Result<(), String> { Ok(()) }
-    fn temporal_context(&self, _topic: &str) -> Vec<String> { vec![] }
+    fn link_deadline(&self, _blueprint_id: &str, _deadline_id: &str) -> Result<(), String> {
+        Ok(())
+    }
+    fn temporal_context(&self, _topic: &str) -> Vec<String> {
+        vec![]
+    }
 }
 
 pub trait CognitionBridge: Send + Sync {
-    fn analyze_intent(&self, _description: &str) -> Result<String, String> { Ok(String::new()) }
-    fn suggest_architecture(&self, _domain: &str) -> Result<String, String> { Ok(String::new()) }
+    fn analyze_intent(&self, _description: &str) -> Result<String, String> {
+        Ok(String::new())
+    }
+    fn suggest_architecture(&self, _domain: &str) -> Result<String, String> {
+        Ok(String::new())
+    }
 }
 
 pub trait CommBridge: Send + Sync {
-    fn notify_blueprint_created(&self, _blueprint_id: &str) -> Result<(), String> { Ok(()) }
-    fn broadcast_update(&self, _event: &str) -> Result<(), String> { Ok(()) }
+    fn notify_blueprint_created(&self, _blueprint_id: &str) -> Result<(), String> {
+        Ok(())
+    }
+    fn broadcast_update(&self, _event: &str) -> Result<(), String> {
+        Ok(())
+    }
 }
 
 pub trait PlanningBridge: Send + Sync {
-    fn link_plan(&self, _blueprint_id: &str, _plan_id: &str) -> Result<(), String> { Ok(()) }
-    fn get_plan_status(&self, _plan_id: &str) -> Result<String, String> { Ok("unknown".into()) }
+    fn link_plan(&self, _blueprint_id: &str, _plan_id: &str) -> Result<(), String> {
+        Ok(())
+    }
+    fn get_plan_status(&self, _plan_id: &str) -> Result<String, String> {
+        Ok("unknown".into())
+    }
 }
 
 pub trait RealityBridge: Send + Sync {
-    fn ground_blueprint(&self, _blueprint_id: &str) -> Result<(), String> { Ok(()) }
-    fn check_feasibility(&self, _constraints: &str) -> Result<bool, String> { Ok(true) }
+    fn ground_blueprint(&self, _blueprint_id: &str) -> Result<(), String> {
+        Ok(())
+    }
+    fn check_feasibility(&self, _constraints: &str) -> Result<bool, String> {
+        Ok(true)
+    }
 }
 
 #[derive(Debug, Clone, Default)]
@@ -77,9 +133,15 @@ impl PlanningBridge for NoOpBridges {}
 impl RealityBridge for NoOpBridges {}
 
 pub trait HydraAdapter: Send + Sync {
-    fn register_with_hydra(&self) -> Result<(), String> { Ok(()) }
-    fn report_health(&self) -> Result<String, String> { Ok("healthy".to_string()) }
-    fn accept_command(&self, _command: &str) -> Result<String, String> { Ok(String::new()) }
+    fn register_with_hydra(&self) -> Result<(), String> {
+        Ok(())
+    }
+    fn report_health(&self) -> Result<String, String> {
+        Ok("healthy".to_string())
+    }
+    fn accept_command(&self, _command: &str) -> Result<String, String> {
+        Ok(String::new())
+    }
 }
 
 impl HydraAdapter for NoOpBridges {}

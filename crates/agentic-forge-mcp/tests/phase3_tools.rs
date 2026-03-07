@@ -1,10 +1,10 @@
 //! Phase 3: MCP tool tests.
 
+use agentic_forge_mcp::session::SessionManager;
+use agentic_forge_mcp::tools::registry::ToolRegistry;
+use serde_json::json;
 use std::sync::Arc;
 use tokio::sync::Mutex;
-use serde_json::json;
-use agentic_forge_mcp::tools::registry::ToolRegistry;
-use agentic_forge_mcp::session::SessionManager;
 
 fn create_session() -> Arc<Mutex<SessionManager>> {
     Arc::new(Mutex::new(SessionManager::new()))
@@ -44,8 +44,17 @@ fn test_tool_descriptions_verb_first() {
         if let Some(ref desc) = tool.description {
             let first_word = desc.split_whitespace().next().unwrap_or("");
             let first_char = first_word.chars().next().unwrap_or(' ');
-            assert!(first_char.is_uppercase(), "Tool {} description should start with uppercase verb: {}", tool.name, desc);
-            assert!(!desc.ends_with('.'), "Tool {} description should not end with period", tool.name);
+            assert!(
+                first_char.is_uppercase(),
+                "Tool {} description should start with uppercase verb: {}",
+                tool.name,
+                desc
+            );
+            assert!(
+                !desc.ends_with('.'),
+                "Tool {} description should not end with period",
+                tool.name
+            );
         }
     }
 }
@@ -54,36 +63,57 @@ fn test_tool_descriptions_verb_first() {
 fn test_all_tools_have_input_schema() {
     let tools = ToolRegistry::list_tools();
     for tool in &tools {
-        assert!(tool.input_schema.is_object(), "Tool {} should have object input_schema", tool.name);
-        assert_eq!(tool.input_schema["type"], "object", "Tool {} input_schema type should be object", tool.name);
+        assert!(
+            tool.input_schema.is_object(),
+            "Tool {} should have object input_schema",
+            tool.name
+        );
+        assert_eq!(
+            tool.input_schema["type"], "object",
+            "Tool {} input_schema type should be object",
+            tool.name
+        );
     }
 }
 
 #[tokio::test]
 async fn test_blueprint_create_tool() {
     let session = create_session();
-    let result = ToolRegistry::call("forge_blueprint_create", Some(json!({
-        "name": "TestProject",
-        "description": "A test",
-        "domain": "api"
-    })), &session).await.unwrap();
+    let result = ToolRegistry::call(
+        "forge_blueprint_create",
+        Some(json!({
+            "name": "TestProject",
+            "description": "A test",
+            "domain": "api"
+        })),
+        &session,
+    )
+    .await
+    .unwrap();
     assert!(result.is_error.is_none());
 }
 
 #[tokio::test]
 async fn test_blueprint_create_missing_name() {
     let session = create_session();
-    let result = ToolRegistry::call("forge_blueprint_create", Some(json!({
-        "description": "A test",
-        "domain": "api"
-    })), &session).await;
+    let result = ToolRegistry::call(
+        "forge_blueprint_create",
+        Some(json!({
+            "description": "A test",
+            "domain": "api"
+        })),
+        &session,
+    )
+    .await;
     assert!(result.is_err());
 }
 
 #[tokio::test]
 async fn test_blueprint_list_tool() {
     let session = create_session();
-    let result = ToolRegistry::call("forge_blueprint_list", Some(json!({})), &session).await.unwrap();
+    let result = ToolRegistry::call("forge_blueprint_list", Some(json!({})), &session)
+        .await
+        .unwrap();
     assert!(result.is_error.is_none());
 }
 
@@ -91,35 +121,63 @@ async fn test_blueprint_list_tool() {
 async fn test_entity_add_tool() {
     let session = create_session();
     // First create a blueprint
-    let create_result = ToolRegistry::call("forge_blueprint_create", Some(json!({
-        "name": "Test", "description": "Test", "domain": "api"
-    })), &session).await.unwrap();
-    let text = match &create_result.content[0] { agentic_forge_mcp::types::ToolContent::Text { text } => text.clone() };
+    let create_result = ToolRegistry::call(
+        "forge_blueprint_create",
+        Some(json!({
+            "name": "Test", "description": "Test", "domain": "api"
+        })),
+        &session,
+    )
+    .await
+    .unwrap();
+    let text = match &create_result.content[0] {
+        agentic_forge_mcp::types::ToolContent::Text { text } => text.clone(),
+    };
     let bp_data: serde_json::Value = serde_json::from_str(&text).unwrap();
     let bp_id = bp_data["blueprint_id"].as_str().unwrap();
 
-    let result = ToolRegistry::call("forge_entity_add", Some(json!({
-        "blueprint_id": bp_id,
-        "name": "User",
-        "description": "A user entity"
-    })), &session).await.unwrap();
+    let result = ToolRegistry::call(
+        "forge_entity_add",
+        Some(json!({
+            "blueprint_id": bp_id,
+            "name": "User",
+            "description": "A user entity"
+        })),
+        &session,
+    )
+    .await
+    .unwrap();
     assert!(result.is_error.is_none());
 }
 
 #[tokio::test]
 async fn test_entity_infer_tool() {
     let session = create_session();
-    let create_result = ToolRegistry::call("forge_blueprint_create", Some(json!({
-        "name": "Test", "description": "Test", "domain": "api"
-    })), &session).await.unwrap();
-    let text = match &create_result.content[0] { agentic_forge_mcp::types::ToolContent::Text { text } => text.clone() };
+    let create_result = ToolRegistry::call(
+        "forge_blueprint_create",
+        Some(json!({
+            "name": "Test", "description": "Test", "domain": "api"
+        })),
+        &session,
+    )
+    .await
+    .unwrap();
+    let text = match &create_result.content[0] {
+        agentic_forge_mcp::types::ToolContent::Text { text } => text.clone(),
+    };
     let bp_data: serde_json::Value = serde_json::from_str(&text).unwrap();
     let bp_id = bp_data["blueprint_id"].as_str().unwrap();
 
-    let result = ToolRegistry::call("forge_entity_infer", Some(json!({
-        "blueprint_id": bp_id,
-        "description": "A system with users and posts"
-    })), &session).await.unwrap();
+    let result = ToolRegistry::call(
+        "forge_entity_infer",
+        Some(json!({
+            "blueprint_id": bp_id,
+            "description": "A system with users and posts"
+        })),
+        &session,
+    )
+    .await
+    .unwrap();
     assert!(result.is_error.is_none());
 }
 
@@ -133,18 +191,32 @@ async fn test_unknown_tool() {
 #[tokio::test]
 async fn test_dependency_add_tool() {
     let session = create_session();
-    let create_result = ToolRegistry::call("forge_blueprint_create", Some(json!({
-        "name": "Test", "description": "Test", "domain": "api"
-    })), &session).await.unwrap();
-    let text = match &create_result.content[0] { agentic_forge_mcp::types::ToolContent::Text { text } => text.clone() };
+    let create_result = ToolRegistry::call(
+        "forge_blueprint_create",
+        Some(json!({
+            "name": "Test", "description": "Test", "domain": "api"
+        })),
+        &session,
+    )
+    .await
+    .unwrap();
+    let text = match &create_result.content[0] {
+        agentic_forge_mcp::types::ToolContent::Text { text } => text.clone(),
+    };
     let bp_data: serde_json::Value = serde_json::from_str(&text).unwrap();
     let bp_id = bp_data["blueprint_id"].as_str().unwrap();
 
-    let result = ToolRegistry::call("forge_dependency_add", Some(json!({
-        "blueprint_id": bp_id,
-        "name": "serde",
-        "version": "1.0"
-    })), &session).await.unwrap();
+    let result = ToolRegistry::call(
+        "forge_dependency_add",
+        Some(json!({
+            "blueprint_id": bp_id,
+            "name": "serde",
+            "version": "1.0"
+        })),
+        &session,
+    )
+    .await
+    .unwrap();
     assert!(result.is_error.is_none());
 }
 
@@ -185,11 +257,16 @@ fn test_query_tools_have_conservation_params() {
     let tools = ToolRegistry::list_tools();
     for tool in &tools {
         if QUERY_TOOLS.contains(&tool.name.as_str()) {
-            let props = tool.input_schema["properties"].as_object()
+            let props = tool.input_schema["properties"]
+                .as_object()
                 .unwrap_or_else(|| panic!("Tool {} has no properties", tool.name));
             for param in CONSERVATION_PARAMS {
-                assert!(props.contains_key(*param),
-                    "Query tool {} missing conservation param '{}'", tool.name, param);
+                assert!(
+                    props.contains_key(*param),
+                    "Query tool {} missing conservation param '{}'",
+                    tool.name,
+                    param
+                );
             }
         }
     }
@@ -200,11 +277,16 @@ fn test_mutation_tools_no_conservation_params() {
     let tools = ToolRegistry::list_tools();
     for tool in &tools {
         if MUTATION_TOOLS.contains(&tool.name.as_str()) {
-            let props = tool.input_schema["properties"].as_object()
+            let props = tool.input_schema["properties"]
+                .as_object()
                 .unwrap_or_else(|| panic!("Tool {} has no properties", tool.name));
             for param in CONSERVATION_PARAMS {
-                assert!(!props.contains_key(*param),
-                    "Mutation tool {} should not have conservation param '{}'", tool.name, param);
+                assert!(
+                    !props.contains_key(*param),
+                    "Mutation tool {} should not have conservation param '{}'",
+                    tool.name,
+                    param
+                );
             }
         }
     }
@@ -213,7 +295,10 @@ fn test_mutation_tools_no_conservation_params() {
 #[test]
 fn test_conservation_param_types() {
     let tools = ToolRegistry::list_tools();
-    let tool = tools.iter().find(|t| t.name == "forge_blueprint_get").unwrap();
+    let tool = tools
+        .iter()
+        .find(|t| t.name == "forge_blueprint_get")
+        .unwrap();
     let props = tool.input_schema["properties"].as_object().unwrap();
 
     assert_eq!(props["include_content"]["type"], "boolean");

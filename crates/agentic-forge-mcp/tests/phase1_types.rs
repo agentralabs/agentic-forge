@@ -155,7 +155,10 @@ fn test_initialize_result_serialization() {
     let result = InitializeResult {
         protocol_version: "2024-11-05".into(),
         capabilities: ServerCapabilities::default(),
-        server_info: ServerInfo { name: "test".into(), version: "0.1.0".into() },
+        server_info: ServerInfo {
+            name: "test".into(),
+            version: "0.1.0".into(),
+        },
     };
     let json = serde_json::to_value(&result).unwrap();
     assert_eq!(json["protocolVersion"], "2024-11-05");

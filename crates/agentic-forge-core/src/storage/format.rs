@@ -1,6 +1,8 @@
 //! Binary format for .forge files.
 
-use crate::types::{ForgeError, ForgeResult, FOOTER_MAGIC, FOOTER_SIZE, FORGE_MAGIC, FORMAT_VERSION, HEADER_SIZE};
+use crate::types::{
+    ForgeError, ForgeResult, FOOTER_MAGIC, FOOTER_SIZE, FORGE_MAGIC, FORMAT_VERSION, HEADER_SIZE,
+};
 use std::io::{Read, Write};
 
 #[derive(Debug, Clone)]

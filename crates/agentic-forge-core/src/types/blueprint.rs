@@ -577,7 +577,8 @@ mod tests {
     #[test]
     fn test_blueprint_file_management() {
         let mut bp = Blueprint::new("Test", "Test", Domain::Cli);
-        bp.files.push(FileBlueprint::new("src/main.rs", FileType::Source));
+        bp.files
+            .push(FileBlueprint::new("src/main.rs", FileType::Source));
         assert_eq!(bp.file_count(), 1);
         assert!(bp.find_file("src/main.rs").is_some());
     }

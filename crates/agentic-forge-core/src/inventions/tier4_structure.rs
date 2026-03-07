@@ -9,7 +9,11 @@ pub struct FileStructureGenerator;
 impl FileStructureGenerator {
     pub fn generate(blueprint: &Blueprint) -> Vec<FileBlueprint> {
         let mut files = Vec::new();
-        let lang = blueprint.metadata.get("language").map(|s| s.as_str()).unwrap_or("rust");
+        let lang = blueprint
+            .metadata
+            .get("language")
+            .map(|s| s.as_str())
+            .unwrap_or("rust");
 
         match lang {
             "rust" => Self::generate_rust_structure(blueprint, &mut files),
@@ -30,24 +34,42 @@ impl FileStructureGenerator {
 
         for entity in &bp.entities {
             let name = entity.name.to_lowercase();
-            files.push(FileBlueprint::new(&format!("src/models/{}.rs", name), FileType::Source));
-            files.push(FileBlueprint::new(&format!("tests/test_{}.rs", name), FileType::Test));
+            files.push(FileBlueprint::new(
+                format!("src/models/{}.rs", name),
+                FileType::Source,
+            ));
+            files.push(FileBlueprint::new(
+                format!("tests/test_{}.rs", name),
+                FileType::Test,
+            ));
         }
 
         for layer in &bp.layers {
-            files.push(FileBlueprint::new(&format!("src/{}/mod.rs", layer.name), FileType::Source));
+            files.push(FileBlueprint::new(
+                format!("src/{}/mod.rs", layer.name),
+                FileType::Source,
+            ));
         }
     }
 
     fn generate_python_structure(bp: &Blueprint, files: &mut Vec<FileBlueprint>) {
         files.push(FileBlueprint::new("pyproject.toml", FileType::Config));
         files.push(FileBlueprint::new("src/__init__.py", FileType::Source));
-        files.push(FileBlueprint::new("src/models/__init__.py", FileType::Source));
+        files.push(FileBlueprint::new(
+            "src/models/__init__.py",
+            FileType::Source,
+        ));
 
         for entity in &bp.entities {
             let name = entity.name.to_lowercase();
-            files.push(FileBlueprint::new(&format!("src/models/{}.py", name), FileType::Source));
-            files.push(FileBlueprint::new(&format!("tests/test_{}.py", name), FileType::Test));
+            files.push(FileBlueprint::new(
+                format!("src/models/{}.py", name),
+                FileType::Source,
+            ));
+            files.push(FileBlueprint::new(
+                format!("tests/test_{}.py", name),
+                FileType::Test,
+            ));
         }
     }
 
@@ -58,13 +80,23 @@ impl FileStructureGenerator {
 
         for entity in &bp.entities {
             let name = entity.name.to_lowercase();
-            files.push(FileBlueprint::new(&format!("src/models/{}.ts", name), FileType::Source));
-            files.push(FileBlueprint::new(&format!("tests/{}.test.ts", name), FileType::Test));
+            files.push(FileBlueprint::new(
+                format!("src/models/{}.ts", name),
+                FileType::Source,
+            ));
+            files.push(FileBlueprint::new(
+                format!("tests/{}.test.ts", name),
+                FileType::Test,
+            ));
         }
     }
 
-    pub fn name() -> &'static str { "FileStructureGenerator" }
-    pub fn tier() -> u8 { 4 }
+    pub fn name() -> &'static str {
+        "FileStructureGenerator"
+    }
+    pub fn tier() -> u8 {
+        4
+    }
 }
 
 pub struct ImportGraphGenerator;
@@ -76,7 +108,10 @@ impl ImportGraphGenerator {
 
         for file in files {
             if file.path.ends_with("main.rs") || file.path.ends_with("index.ts") {
-                if let Some(lib) = paths.iter().find(|p| p.ends_with("lib.rs") || p.ends_with("index.ts")) {
+                if let Some(lib) = paths
+                    .iter()
+                    .find(|p| p.ends_with("lib.rs") || p.ends_with("index.ts"))
+                {
                     if *lib != file.path.as_str() {
                         edges.push(ImportEdge {
                             from_file: file.path.clone(),
@@ -101,15 +136,20 @@ impl ImportGraphGenerator {
         edges
     }
 
-    pub fn name() -> &'static str { "ImportGraphGenerator" }
-    pub fn tier() -> u8 { 4 }
+    pub fn name() -> &'static str {
+        "ImportGraphGenerator"
+    }
+    pub fn tier() -> u8 {
+        4
+    }
 }
 
 pub struct ModuleHierarchyBuilder;
 
 impl ModuleHierarchyBuilder {
     pub fn build(files: &[FileBlueprint]) -> Vec<ModuleNode> {
-        let mut modules: std::collections::HashMap<String, Vec<String>> = std::collections::HashMap::new();
+        let mut modules: std::collections::HashMap<String, Vec<String>> =
+            std::collections::HashMap::new();
 
         for file in files {
             if let Some(parent) = file.path.rsplit_once('/').map(|(p, _)| p.to_string()) {
@@ -117,15 +157,22 @@ impl ModuleHierarchyBuilder {
             }
         }
 
-        modules.into_iter().map(|(name, children)| ModuleNode {
-            name,
-            children,
-            is_public: true,
-        }).collect()
+        modules
+            .into_iter()
+            .map(|(name, children)| ModuleNode {
+                name,
+                children,
+                is_public: true,
+            })
+            .collect()
     }
 
-    pub fn name() -> &'static str { "ModuleHierarchyBuilder" }
-    pub fn tier() -> u8 { 4 }
+    pub fn name() -> &'static str {
+        "ModuleHierarchyBuilder"
+    }
+    pub fn tier() -> u8 {
+        4
+    }
 }
 
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
@@ -141,26 +188,67 @@ impl ConfigDesigner {
     pub fn design(domain: Domain, dependencies: &[Dependency]) -> Vec<ConfigEntry> {
         let mut config = Vec::new();
 
-        config.push(ConfigEntry { key: "app.name".into(), value_type: "string".into(), default: "my-app".into(), description: "Application name".into() });
-        config.push(ConfigEntry { key: "app.version".into(), value_type: "string".into(), default: "0.1.0".into(), description: "Application version".into() });
+        config.push(ConfigEntry {
+            key: "app.name".into(),
+            value_type: "string".into(),
+            default: "my-app".into(),
+            description: "Application name".into(),
+        });
+        config.push(ConfigEntry {
+            key: "app.version".into(),
+            value_type: "string".into(),
+            default: "0.1.0".into(),
+            description: "Application version".into(),
+        });
 
         if matches!(domain, Domain::Web | Domain::Api | Domain::Service) {
-            config.push(ConfigEntry { key: "server.host".into(), value_type: "string".into(), default: "0.0.0.0".into(), description: "Server host".into() });
-            config.push(ConfigEntry { key: "server.port".into(), value_type: "u16".into(), default: "8080".into(), description: "Server port".into() });
+            config.push(ConfigEntry {
+                key: "server.host".into(),
+                value_type: "string".into(),
+                default: "0.0.0.0".into(),
+                description: "Server host".into(),
+            });
+            config.push(ConfigEntry {
+                key: "server.port".into(),
+                value_type: "u16".into(),
+                default: "8080".into(),
+                description: "Server port".into(),
+            });
         }
 
-        if dependencies.iter().any(|d| d.name.contains("postgres") || d.name.contains("sqlx") || d.name.contains("diesel")) {
-            config.push(ConfigEntry { key: "database.url".into(), value_type: "string".into(), default: "postgres://localhost/mydb".into(), description: "Database URL".into() });
-            config.push(ConfigEntry { key: "database.max_connections".into(), value_type: "u32".into(), default: "10".into(), description: "Max DB connections".into() });
+        if dependencies.iter().any(|d| {
+            d.name.contains("postgres") || d.name.contains("sqlx") || d.name.contains("diesel")
+        }) {
+            config.push(ConfigEntry {
+                key: "database.url".into(),
+                value_type: "string".into(),
+                default: "postgres://localhost/mydb".into(),
+                description: "Database URL".into(),
+            });
+            config.push(ConfigEntry {
+                key: "database.max_connections".into(),
+                value_type: "u32".into(),
+                default: "10".into(),
+                description: "Max DB connections".into(),
+            });
         }
 
-        config.push(ConfigEntry { key: "log.level".into(), value_type: "string".into(), default: "info".into(), description: "Log level".into() });
+        config.push(ConfigEntry {
+            key: "log.level".into(),
+            value_type: "string".into(),
+            default: "info".into(),
+            description: "Log level".into(),
+        });
 
         config
     }
 
-    pub fn name() -> &'static str { "ConfigDesigner" }
-    pub fn tier() -> u8 { 4 }
+    pub fn name() -> &'static str {
+        "ConfigDesigner"
+    }
+    pub fn tier() -> u8 {
+        4
+    }
 }
 
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]

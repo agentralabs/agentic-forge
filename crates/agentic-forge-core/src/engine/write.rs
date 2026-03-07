@@ -17,7 +17,11 @@ impl<'a> WriteEngine<'a> {
 
     // Blueprint operations
 
-    pub fn rename_blueprint(&mut self, id: &BlueprintId, name: impl Into<String>) -> ForgeResult<()> {
+    pub fn rename_blueprint(
+        &mut self,
+        id: &BlueprintId,
+        name: impl Into<String>,
+    ) -> ForgeResult<()> {
         let bp = self.engine.store.load_mut(id)?;
         bp.name = name.into();
         bp.touch();
@@ -25,7 +29,11 @@ impl<'a> WriteEngine<'a> {
         Ok(())
     }
 
-    pub fn set_description(&mut self, id: &BlueprintId, desc: impl Into<String>) -> ForgeResult<()> {
+    pub fn set_description(
+        &mut self,
+        id: &BlueprintId,
+        desc: impl Into<String>,
+    ) -> ForgeResult<()> {
         let bp = self.engine.store.load_mut(id)?;
         bp.description = desc.into();
         bp.touch();
@@ -49,7 +57,12 @@ impl<'a> WriteEngine<'a> {
         Ok(())
     }
 
-    pub fn set_metadata(&mut self, id: &BlueprintId, key: impl Into<String>, value: impl Into<String>) -> ForgeResult<()> {
+    pub fn set_metadata(
+        &mut self,
+        id: &BlueprintId,
+        key: impl Into<String>,
+        value: impl Into<String>,
+    ) -> ForgeResult<()> {
         let bp = self.engine.store.load_mut(id)?;
         bp.metadata.insert(key.into(), value.into());
         bp.touch();
@@ -81,7 +94,11 @@ impl<'a> WriteEngine<'a> {
         Ok(id)
     }
 
-    pub fn add_entity_from_spec(&mut self, bp_id: &BlueprintId, spec: &EntitySpec) -> ForgeResult<EntityId> {
+    pub fn add_entity_from_spec(
+        &mut self,
+        bp_id: &BlueprintId,
+        spec: &EntitySpec,
+    ) -> ForgeResult<EntityId> {
         let mut entity = Entity::new(&spec.name, &spec.description);
         entity.is_aggregate_root = spec.is_aggregate_root;
         for field in &spec.fields {
@@ -111,9 +128,16 @@ impl<'a> WriteEngine<'a> {
         self.add_entity(bp_id, entity)
     }
 
-    pub fn remove_entity(&mut self, bp_id: &BlueprintId, entity_id: &EntityId) -> ForgeResult<Entity> {
+    pub fn remove_entity(
+        &mut self,
+        bp_id: &BlueprintId,
+        entity_id: &EntityId,
+    ) -> ForgeResult<Entity> {
         let bp = self.engine.store.load_mut(bp_id)?;
-        let pos = bp.entities.iter().position(|e| e.id == *entity_id)
+        let pos = bp
+            .entities
+            .iter()
+            .position(|e| e.id == *entity_id)
             .ok_or_else(|| ForgeError::EntityNotFound(entity_id.to_string()))?;
         let entity = bp.entities.remove(pos);
         bp.touch();
@@ -121,9 +145,17 @@ impl<'a> WriteEngine<'a> {
         Ok(entity)
     }
 
-    pub fn update_entity_name(&mut self, bp_id: &BlueprintId, entity_id: &EntityId, name: impl Into<String>) -> ForgeResult<()> {
+    pub fn update_entity_name(
+        &mut self,
+        bp_id: &BlueprintId,
+        entity_id: &EntityId,
+        name: impl Into<String>,
+    ) -> ForgeResult<()> {
         let bp = self.engine.store.load_mut(bp_id)?;
-        let entity = bp.entities.iter_mut().find(|e| e.id == *entity_id)
+        let entity = bp
+            .entities
+            .iter_mut()
+            .find(|e| e.id == *entity_id)
             .ok_or_else(|| ForgeError::EntityNotFound(entity_id.to_string()))?;
         entity.name = name.into();
         bp.touch();
@@ -131,9 +163,17 @@ impl<'a> WriteEngine<'a> {
         Ok(())
     }
 
-    pub fn add_field_to_entity(&mut self, bp_id: &BlueprintId, entity_id: &EntityId, field: EntityField) -> ForgeResult<()> {
+    pub fn add_field_to_entity(
+        &mut self,
+        bp_id: &BlueprintId,
+        entity_id: &EntityId,
+        field: EntityField,
+    ) -> ForgeResult<()> {
         let bp = self.engine.store.load_mut(bp_id)?;
-        let entity = bp.entities.iter_mut().find(|e| e.id == *entity_id)
+        let entity = bp
+            .entities
+            .iter_mut()
+            .find(|e| e.id == *entity_id)
             .ok_or_else(|| ForgeError::EntityNotFound(entity_id.to_string()))?;
         entity.fields.push(field);
         bp.touch();
@@ -141,11 +181,22 @@ impl<'a> WriteEngine<'a> {
         Ok(())
     }
 
-    pub fn remove_field_from_entity(&mut self, bp_id: &BlueprintId, entity_id: &EntityId, field_name: &str) -> ForgeResult<()> {
+    pub fn remove_field_from_entity(
+        &mut self,
+        bp_id: &BlueprintId,
+        entity_id: &EntityId,
+        field_name: &str,
+    ) -> ForgeResult<()> {
         let bp = self.engine.store.load_mut(bp_id)?;
-        let entity = bp.entities.iter_mut().find(|e| e.id == *entity_id)
+        let entity = bp
+            .entities
+            .iter_mut()
+            .find(|e| e.id == *entity_id)
             .ok_or_else(|| ForgeError::EntityNotFound(entity_id.to_string()))?;
-        let pos = entity.fields.iter().position(|f| f.name == field_name)
+        let pos = entity
+            .fields
+            .iter()
+            .position(|f| f.name == field_name)
             .ok_or_else(|| ForgeError::MissingField(field_name.to_string()))?;
         entity.fields.remove(pos);
         bp.touch();
@@ -153,9 +204,17 @@ impl<'a> WriteEngine<'a> {
         Ok(())
     }
 
-    pub fn add_operation_to_entity(&mut self, bp_id: &BlueprintId, entity_id: &EntityId, op: EntityOperation) -> ForgeResult<OperationId> {
+    pub fn add_operation_to_entity(
+        &mut self,
+        bp_id: &BlueprintId,
+        entity_id: &EntityId,
+        op: EntityOperation,
+    ) -> ForgeResult<OperationId> {
         let bp = self.engine.store.load_mut(bp_id)?;
-        let entity = bp.entities.iter_mut().find(|e| e.id == *entity_id)
+        let entity = bp
+            .entities
+            .iter_mut()
+            .find(|e| e.id == *entity_id)
             .ok_or_else(|| ForgeError::EntityNotFound(entity_id.to_string()))?;
         let id = op.id;
         entity.operations.push(op);
@@ -164,11 +223,22 @@ impl<'a> WriteEngine<'a> {
         Ok(id)
     }
 
-    pub fn remove_operation_from_entity(&mut self, bp_id: &BlueprintId, entity_id: &EntityId, op_id: &OperationId) -> ForgeResult<()> {
+    pub fn remove_operation_from_entity(
+        &mut self,
+        bp_id: &BlueprintId,
+        entity_id: &EntityId,
+        op_id: &OperationId,
+    ) -> ForgeResult<()> {
         let bp = self.engine.store.load_mut(bp_id)?;
-        let entity = bp.entities.iter_mut().find(|e| e.id == *entity_id)
+        let entity = bp
+            .entities
+            .iter_mut()
+            .find(|e| e.id == *entity_id)
             .ok_or_else(|| ForgeError::EntityNotFound(entity_id.to_string()))?;
-        let pos = entity.operations.iter().position(|o| o.id == *op_id)
+        let pos = entity
+            .operations
+            .iter()
+            .position(|o| o.id == *op_id)
             .ok_or_else(|| ForgeError::OperationNotFound(op_id.to_string()))?;
         entity.operations.remove(pos);
         bp.touch();
@@ -176,9 +246,17 @@ impl<'a> WriteEngine<'a> {
         Ok(())
     }
 
-    pub fn add_relationship(&mut self, bp_id: &BlueprintId, entity_id: &EntityId, rel: Relationship) -> ForgeResult<()> {
+    pub fn add_relationship(
+        &mut self,
+        bp_id: &BlueprintId,
+        entity_id: &EntityId,
+        rel: Relationship,
+    ) -> ForgeResult<()> {
         let bp = self.engine.store.load_mut(bp_id)?;
-        let entity = bp.entities.iter_mut().find(|e| e.id == *entity_id)
+        let entity = bp
+            .entities
+            .iter_mut()
+            .find(|e| e.id == *entity_id)
             .ok_or_else(|| ForgeError::EntityNotFound(entity_id.to_string()))?;
         entity.relationships.push(rel);
         bp.touch();
@@ -186,9 +264,17 @@ impl<'a> WriteEngine<'a> {
         Ok(())
     }
 
-    pub fn add_validation_rule(&mut self, bp_id: &BlueprintId, entity_id: &EntityId, rule: ValidationRule) -> ForgeResult<()> {
+    pub fn add_validation_rule(
+        &mut self,
+        bp_id: &BlueprintId,
+        entity_id: &EntityId,
+        rule: ValidationRule,
+    ) -> ForgeResult<()> {
         let bp = self.engine.store.load_mut(bp_id)?;
-        let entity = bp.entities.iter_mut().find(|e| e.id == *entity_id)
+        let entity = bp
+            .entities
+            .iter_mut()
+            .find(|e| e.id == *entity_id)
             .ok_or_else(|| ForgeError::EntityNotFound(entity_id.to_string()))?;
         entity.validation_rules.push(rule);
         bp.touch();
@@ -210,9 +296,16 @@ impl<'a> WriteEngine<'a> {
         Ok(id)
     }
 
-    pub fn remove_file(&mut self, bp_id: &BlueprintId, file_id: &FileId) -> ForgeResult<FileBlueprint> {
+    pub fn remove_file(
+        &mut self,
+        bp_id: &BlueprintId,
+        file_id: &FileId,
+    ) -> ForgeResult<FileBlueprint> {
         let bp = self.engine.store.load_mut(bp_id)?;
-        let pos = bp.files.iter().position(|f| f.id == *file_id)
+        let pos = bp
+            .files
+            .iter()
+            .position(|f| f.id == *file_id)
             .ok_or_else(|| ForgeError::FileNotFound(file_id.to_string()))?;
         let file = bp.files.remove(pos);
         bp.touch();
@@ -220,9 +313,17 @@ impl<'a> WriteEngine<'a> {
         Ok(file)
     }
 
-    pub fn update_file_imports(&mut self, bp_id: &BlueprintId, file_id: &FileId, imports: Vec<String>) -> ForgeResult<()> {
+    pub fn update_file_imports(
+        &mut self,
+        bp_id: &BlueprintId,
+        file_id: &FileId,
+        imports: Vec<String>,
+    ) -> ForgeResult<()> {
         let bp = self.engine.store.load_mut(bp_id)?;
-        let file = bp.files.iter_mut().find(|f| f.id == *file_id)
+        let file = bp
+            .files
+            .iter_mut()
+            .find(|f| f.id == *file_id)
             .ok_or_else(|| ForgeError::FileNotFound(file_id.to_string()))?;
         file.imports = imports;
         bp.touch();
@@ -230,9 +331,17 @@ impl<'a> WriteEngine<'a> {
         Ok(())
     }
 
-    pub fn update_file_exports(&mut self, bp_id: &BlueprintId, file_id: &FileId, exports: Vec<String>) -> ForgeResult<()> {
+    pub fn update_file_exports(
+        &mut self,
+        bp_id: &BlueprintId,
+        file_id: &FileId,
+        exports: Vec<String>,
+    ) -> ForgeResult<()> {
         let bp = self.engine.store.load_mut(bp_id)?;
-        let file = bp.files.iter_mut().find(|f| f.id == *file_id)
+        let file = bp
+            .files
+            .iter_mut()
+            .find(|f| f.id == *file_id)
             .ok_or_else(|| ForgeError::FileNotFound(file_id.to_string()))?;
         file.exports = exports;
         bp.touch();
@@ -242,7 +351,11 @@ impl<'a> WriteEngine<'a> {
 
     // Dependency operations
 
-    pub fn add_dependency(&mut self, bp_id: &BlueprintId, dep: Dependency) -> ForgeResult<DependencyId> {
+    pub fn add_dependency(
+        &mut self,
+        bp_id: &BlueprintId,
+        dep: Dependency,
+    ) -> ForgeResult<DependencyId> {
         let bp = self.engine.store.load_mut(bp_id)?;
         if bp.dependencies.len() >= MAX_DEPENDENCIES {
             return Err(ForgeError::capacity("dependencies", MAX_DEPENDENCIES));
@@ -257,9 +370,16 @@ impl<'a> WriteEngine<'a> {
         Ok(id)
     }
 
-    pub fn remove_dependency(&mut self, bp_id: &BlueprintId, dep_id: &DependencyId) -> ForgeResult<Dependency> {
+    pub fn remove_dependency(
+        &mut self,
+        bp_id: &BlueprintId,
+        dep_id: &DependencyId,
+    ) -> ForgeResult<Dependency> {
         let bp = self.engine.store.load_mut(bp_id)?;
-        let pos = bp.dependencies.iter().position(|d| d.id == *dep_id)
+        let pos = bp
+            .dependencies
+            .iter()
+            .position(|d| d.id == *dep_id)
             .ok_or_else(|| ForgeError::DependencyNotFound(dep_id.to_string()))?;
         let dep = bp.dependencies.remove(pos);
         bp.touch();
@@ -267,9 +387,17 @@ impl<'a> WriteEngine<'a> {
         Ok(dep)
     }
 
-    pub fn update_dependency_version(&mut self, bp_id: &BlueprintId, dep_id: &DependencyId, version: impl Into<String>) -> ForgeResult<()> {
+    pub fn update_dependency_version(
+        &mut self,
+        bp_id: &BlueprintId,
+        dep_id: &DependencyId,
+        version: impl Into<String>,
+    ) -> ForgeResult<()> {
         let bp = self.engine.store.load_mut(bp_id)?;
-        let dep = bp.dependencies.iter_mut().find(|d| d.id == *dep_id)
+        let dep = bp
+            .dependencies
+            .iter_mut()
+            .find(|d| d.id == *dep_id)
             .ok_or_else(|| ForgeError::DependencyNotFound(dep_id.to_string()))?;
         dep.version = version.into();
         bp.touch();
@@ -288,9 +416,16 @@ impl<'a> WriteEngine<'a> {
         Ok(id)
     }
 
-    pub fn remove_test_case(&mut self, bp_id: &BlueprintId, tc_id: &TestCaseId) -> ForgeResult<TestCase> {
+    pub fn remove_test_case(
+        &mut self,
+        bp_id: &BlueprintId,
+        tc_id: &TestCaseId,
+    ) -> ForgeResult<TestCase> {
         let bp = self.engine.store.load_mut(bp_id)?;
-        let pos = bp.test_cases.iter().position(|t| t.id == *tc_id)
+        let pos = bp
+            .test_cases
+            .iter()
+            .position(|t| t.id == *tc_id)
             .ok_or_else(|| ForgeError::TestCaseNotFound(tc_id.to_string()))?;
         let tc = bp.test_cases.remove(pos);
         bp.touch();
@@ -300,7 +435,11 @@ impl<'a> WriteEngine<'a> {
 
     // Type definition operations
 
-    pub fn add_type_definition(&mut self, bp_id: &BlueprintId, td: TypeDefinition) -> ForgeResult<()> {
+    pub fn add_type_definition(
+        &mut self,
+        bp_id: &BlueprintId,
+        td: TypeDefinition,
+    ) -> ForgeResult<()> {
         let bp = self.engine.store.load_mut(bp_id)?;
         bp.type_definitions.push(td);
         bp.touch();
@@ -310,7 +449,10 @@ impl<'a> WriteEngine<'a> {
 
     pub fn remove_type_definition(&mut self, bp_id: &BlueprintId, name: &str) -> ForgeResult<()> {
         let bp = self.engine.store.load_mut(bp_id)?;
-        let pos = bp.type_definitions.iter().position(|t| t.name == name)
+        let pos = bp
+            .type_definitions
+            .iter()
+            .position(|t| t.name == name)
             .ok_or_else(|| ForgeError::MissingField(name.to_string()))?;
         bp.type_definitions.remove(pos);
         bp.touch();
@@ -320,7 +462,11 @@ impl<'a> WriteEngine<'a> {
 
     // Function blueprint operations
 
-    pub fn add_function_blueprint(&mut self, bp_id: &BlueprintId, fb: FunctionBlueprint) -> ForgeResult<()> {
+    pub fn add_function_blueprint(
+        &mut self,
+        bp_id: &BlueprintId,
+        fb: FunctionBlueprint,
+    ) -> ForgeResult<()> {
         let bp = self.engine.store.load_mut(bp_id)?;
         bp.function_blueprints.push(fb);
         bp.touch();
@@ -338,7 +484,11 @@ impl<'a> WriteEngine<'a> {
         Ok(())
     }
 
-    pub fn add_concern(&mut self, bp_id: &BlueprintId, concern: CrossCuttingConcern) -> ForgeResult<()> {
+    pub fn add_concern(
+        &mut self,
+        bp_id: &BlueprintId,
+        concern: CrossCuttingConcern,
+    ) -> ForgeResult<()> {
         let bp = self.engine.store.load_mut(bp_id)?;
         bp.concerns.push(concern);
         bp.touch();
@@ -372,7 +522,11 @@ impl<'a> WriteEngine<'a> {
         Ok(())
     }
 
-    pub fn set_generation_order(&mut self, bp_id: &BlueprintId, order: Vec<String>) -> ForgeResult<()> {
+    pub fn set_generation_order(
+        &mut self,
+        bp_id: &BlueprintId,
+        order: Vec<String>,
+    ) -> ForgeResult<()> {
         let bp = self.engine.store.load_mut(bp_id)?;
         bp.generation_order = order;
         bp.touch();
@@ -388,7 +542,9 @@ mod tests {
 
     fn setup() -> (ForgeEngine, BlueprintId) {
         let mut engine = ForgeEngine::new();
-        let id = engine.create_blueprint("Test", "Test blueprint", Domain::Api).unwrap();
+        let id = engine
+            .create_blueprint("Test", "Test blueprint", Domain::Api)
+            .unwrap();
         (engine, id)
     }
 
@@ -409,8 +565,14 @@ mod tests {
     #[test]
     fn test_set_status() {
         let (mut engine, id) = setup();
-        engine.writer().set_status(&id, BlueprintStatus::Complete).unwrap();
-        assert_eq!(engine.store.load(&id).unwrap().status, BlueprintStatus::Complete);
+        engine
+            .writer()
+            .set_status(&id, BlueprintStatus::Complete)
+            .unwrap();
+        assert_eq!(
+            engine.store.load(&id).unwrap().status,
+            BlueprintStatus::Complete
+        );
     }
 
     #[test]
@@ -424,7 +586,10 @@ mod tests {
     fn test_set_metadata() {
         let (mut engine, id) = setup();
         engine.writer().set_metadata(&id, "key", "value").unwrap();
-        assert_eq!(engine.store.load(&id).unwrap().metadata.get("key").unwrap(), "value");
+        assert_eq!(
+            engine.store.load(&id).unwrap().metadata.get("key").unwrap(),
+            "value"
+        );
     }
 
     #[test]
@@ -440,7 +605,10 @@ mod tests {
     #[test]
     fn test_add_duplicate_entity() {
         let (mut engine, id) = setup();
-        engine.writer().add_entity(&id, Entity::new("User", "A")).unwrap();
+        engine
+            .writer()
+            .add_entity(&id, Entity::new("User", "A"))
+            .unwrap();
         let result = engine.writer().add_entity(&id, Entity::new("User", "B"));
         assert!(result.is_err());
     }
@@ -448,7 +616,10 @@ mod tests {
     #[test]
     fn test_remove_entity() {
         let (mut engine, id) = setup();
-        let eid = engine.writer().add_entity(&id, Entity::new("User", "A")).unwrap();
+        let eid = engine
+            .writer()
+            .add_entity(&id, Entity::new("User", "A"))
+            .unwrap();
         engine.writer().remove_entity(&id, &eid).unwrap();
         assert_eq!(engine.store.load(&id).unwrap().entity_count(), 0);
     }
@@ -456,17 +627,38 @@ mod tests {
     #[test]
     fn test_update_entity_name() {
         let (mut engine, id) = setup();
-        let eid = engine.writer().add_entity(&id, Entity::new("User", "A")).unwrap();
-        engine.writer().update_entity_name(&id, &eid, "Account").unwrap();
-        assert_eq!(engine.store.load(&id).unwrap().find_entity_by_id(&eid).unwrap().name, "Account");
+        let eid = engine
+            .writer()
+            .add_entity(&id, Entity::new("User", "A"))
+            .unwrap();
+        engine
+            .writer()
+            .update_entity_name(&id, &eid, "Account")
+            .unwrap();
+        assert_eq!(
+            engine
+                .store
+                .load(&id)
+                .unwrap()
+                .find_entity_by_id(&eid)
+                .unwrap()
+                .name,
+            "Account"
+        );
     }
 
     #[test]
     fn test_add_field_to_entity() {
         let (mut engine, id) = setup();
-        let eid = engine.writer().add_entity(&id, Entity::new("User", "A")).unwrap();
+        let eid = engine
+            .writer()
+            .add_entity(&id, Entity::new("User", "A"))
+            .unwrap();
         let field = EntityField::new("name", FieldType::String);
-        engine.writer().add_field_to_entity(&id, &eid, field).unwrap();
+        engine
+            .writer()
+            .add_field_to_entity(&id, &eid, field)
+            .unwrap();
         let bp = engine.store.load(&id).unwrap();
         assert_eq!(bp.find_entity_by_id(&eid).unwrap().fields.len(), 1);
     }
@@ -474,20 +666,55 @@ mod tests {
     #[test]
     fn test_remove_field_from_entity() {
         let (mut engine, id) = setup();
-        let eid = engine.writer().add_entity(&id, Entity::new("User", "A")).unwrap();
+        let eid = engine
+            .writer()
+            .add_entity(&id, Entity::new("User", "A"))
+            .unwrap();
         let field = EntityField::new("name", FieldType::String);
-        engine.writer().add_field_to_entity(&id, &eid, field).unwrap();
-        engine.writer().remove_field_from_entity(&id, &eid, "name").unwrap();
-        assert_eq!(engine.store.load(&id).unwrap().find_entity_by_id(&eid).unwrap().fields.len(), 0);
+        engine
+            .writer()
+            .add_field_to_entity(&id, &eid, field)
+            .unwrap();
+        engine
+            .writer()
+            .remove_field_from_entity(&id, &eid, "name")
+            .unwrap();
+        assert_eq!(
+            engine
+                .store
+                .load(&id)
+                .unwrap()
+                .find_entity_by_id(&eid)
+                .unwrap()
+                .fields
+                .len(),
+            0
+        );
     }
 
     #[test]
     fn test_add_operation_to_entity() {
         let (mut engine, id) = setup();
-        let eid = engine.writer().add_entity(&id, Entity::new("User", "A")).unwrap();
+        let eid = engine
+            .writer()
+            .add_entity(&id, Entity::new("User", "A"))
+            .unwrap();
         let op = EntityOperation::new("create", OperationType::Create);
-        engine.writer().add_operation_to_entity(&id, &eid, op).unwrap();
-        assert_eq!(engine.store.load(&id).unwrap().find_entity_by_id(&eid).unwrap().operations.len(), 1);
+        engine
+            .writer()
+            .add_operation_to_entity(&id, &eid, op)
+            .unwrap();
+        assert_eq!(
+            engine
+                .store
+                .load(&id)
+                .unwrap()
+                .find_entity_by_id(&eid)
+                .unwrap()
+                .operations
+                .len(),
+            1
+        );
     }
 
     #[test]
@@ -518,15 +745,23 @@ mod tests {
     #[test]
     fn test_add_duplicate_dependency() {
         let (mut engine, id) = setup();
-        engine.writer().add_dependency(&id, Dependency::new("serde", "1.0")).unwrap();
-        let result = engine.writer().add_dependency(&id, Dependency::new("serde", "2.0"));
+        engine
+            .writer()
+            .add_dependency(&id, Dependency::new("serde", "1.0"))
+            .unwrap();
+        let result = engine
+            .writer()
+            .add_dependency(&id, Dependency::new("serde", "2.0"));
         assert!(result.is_err());
     }
 
     #[test]
     fn test_remove_dependency() {
         let (mut engine, id) = setup();
-        let did = engine.writer().add_dependency(&id, Dependency::new("serde", "1.0")).unwrap();
+        let did = engine
+            .writer()
+            .add_dependency(&id, Dependency::new("serde", "1.0"))
+            .unwrap();
         engine.writer().remove_dependency(&id, &did).unwrap();
         assert_eq!(engine.store.load(&id).unwrap().dependency_count(), 0);
     }
@@ -534,9 +769,24 @@ mod tests {
     #[test]
     fn test_update_dependency_version() {
         let (mut engine, id) = setup();
-        let did = engine.writer().add_dependency(&id, Dependency::new("serde", "1.0")).unwrap();
-        engine.writer().update_dependency_version(&id, &did, "2.0").unwrap();
-        assert_eq!(engine.store.load(&id).unwrap().find_dependency("serde").unwrap().version, "2.0");
+        let did = engine
+            .writer()
+            .add_dependency(&id, Dependency::new("serde", "1.0"))
+            .unwrap();
+        engine
+            .writer()
+            .update_dependency_version(&id, &did, "2.0")
+            .unwrap();
+        assert_eq!(
+            engine
+                .store
+                .load(&id)
+                .unwrap()
+                .find_dependency("serde")
+                .unwrap()
+                .version,
+            "2.0"
+        );
     }
 
     #[test]
@@ -660,7 +910,10 @@ mod tests {
     #[test]
     fn test_add_relationship() {
         let (mut engine, id) = setup();
-        let eid = engine.writer().add_entity(&id, Entity::new("User", "A")).unwrap();
+        let eid = engine
+            .writer()
+            .add_entity(&id, Entity::new("User", "A"))
+            .unwrap();
         let rel = Relationship {
             target_entity: "Post".into(),
             relationship_type: RelationshipType::HasMany,
@@ -668,55 +921,114 @@ mod tests {
             description: "User has many posts".into(),
         };
         engine.writer().add_relationship(&id, &eid, rel).unwrap();
-        let entity = engine.store.load(&id).unwrap().find_entity_by_id(&eid).unwrap();
+        let entity = engine
+            .store
+            .load(&id)
+            .unwrap()
+            .find_entity_by_id(&eid)
+            .unwrap();
         assert_eq!(entity.relationships.len(), 1);
     }
 
     #[test]
     fn test_add_validation_rule() {
         let (mut engine, id) = setup();
-        let eid = engine.writer().add_entity(&id, Entity::new("User", "A")).unwrap();
+        let eid = engine
+            .writer()
+            .add_entity(&id, Entity::new("User", "A"))
+            .unwrap();
         let rule = ValidationRule {
             field: "email".into(),
             rule_type: "format".into(),
             parameters: std::collections::HashMap::new(),
             message: "Invalid email".into(),
         };
-        engine.writer().add_validation_rule(&id, &eid, rule).unwrap();
+        engine
+            .writer()
+            .add_validation_rule(&id, &eid, rule)
+            .unwrap();
     }
 
     #[test]
     fn test_update_file_imports() {
         let (mut engine, id) = setup();
-        let fid = engine.writer().add_file(&id, FileBlueprint::new("src/main.rs", FileType::Source)).unwrap();
-        engine.writer().update_file_imports(&id, &fid, vec!["std::io".into()]).unwrap();
-        let file = engine.store.load(&id).unwrap().files.iter().find(|f| f.id == fid).unwrap();
+        let fid = engine
+            .writer()
+            .add_file(&id, FileBlueprint::new("src/main.rs", FileType::Source))
+            .unwrap();
+        engine
+            .writer()
+            .update_file_imports(&id, &fid, vec!["std::io".into()])
+            .unwrap();
+        let file = engine
+            .store
+            .load(&id)
+            .unwrap()
+            .files
+            .iter()
+            .find(|f| f.id == fid)
+            .unwrap();
         assert_eq!(file.imports.len(), 1);
     }
 
     #[test]
     fn test_update_file_exports() {
         let (mut engine, id) = setup();
-        let fid = engine.writer().add_file(&id, FileBlueprint::new("src/lib.rs", FileType::Source)).unwrap();
-        engine.writer().update_file_exports(&id, &fid, vec!["App".into()]).unwrap();
-        let file = engine.store.load(&id).unwrap().files.iter().find(|f| f.id == fid).unwrap();
+        let fid = engine
+            .writer()
+            .add_file(&id, FileBlueprint::new("src/lib.rs", FileType::Source))
+            .unwrap();
+        engine
+            .writer()
+            .update_file_exports(&id, &fid, vec!["App".into()])
+            .unwrap();
+        let file = engine
+            .store
+            .load(&id)
+            .unwrap()
+            .files
+            .iter()
+            .find(|f| f.id == fid)
+            .unwrap();
         assert_eq!(file.exports.len(), 1);
     }
 
     #[test]
     fn test_remove_operation_from_entity() {
         let (mut engine, id) = setup();
-        let eid = engine.writer().add_entity(&id, Entity::new("User", "A")).unwrap();
+        let eid = engine
+            .writer()
+            .add_entity(&id, Entity::new("User", "A"))
+            .unwrap();
         let op = EntityOperation::new("create", OperationType::Create);
-        let oid = engine.writer().add_operation_to_entity(&id, &eid, op).unwrap();
-        engine.writer().remove_operation_from_entity(&id, &eid, &oid).unwrap();
-        assert_eq!(engine.store.load(&id).unwrap().find_entity_by_id(&eid).unwrap().operations.len(), 0);
+        let oid = engine
+            .writer()
+            .add_operation_to_entity(&id, &eid, op)
+            .unwrap();
+        engine
+            .writer()
+            .remove_operation_from_entity(&id, &eid, &oid)
+            .unwrap();
+        assert_eq!(
+            engine
+                .store
+                .load(&id)
+                .unwrap()
+                .find_entity_by_id(&eid)
+                .unwrap()
+                .operations
+                .len(),
+            0
+        );
     }
 
     #[test]
     fn test_remove_type_definition() {
         let (mut engine, id) = setup();
-        engine.writer().add_type_definition(&id, TypeDefinition::new("User", TypeKind::Struct)).unwrap();
+        engine
+            .writer()
+            .add_type_definition(&id, TypeDefinition::new("User", TypeKind::Struct))
+            .unwrap();
         engine.writer().remove_type_definition(&id, "User").unwrap();
         assert_eq!(engine.store.load(&id).unwrap().type_definitions.len(), 0);
     }
@@ -724,7 +1036,10 @@ mod tests {
     #[test]
     fn test_remove_test_case() {
         let (mut engine, id) = setup();
-        let tcid = engine.writer().add_test_case(&id, TestCase::new("test_a", TestType::Unit, "A")).unwrap();
+        let tcid = engine
+            .writer()
+            .add_test_case(&id, TestCase::new("test_a", TestType::Unit, "A"))
+            .unwrap();
         engine.writer().remove_test_case(&id, &tcid).unwrap();
         assert_eq!(engine.store.load(&id).unwrap().test_count(), 0);
     }

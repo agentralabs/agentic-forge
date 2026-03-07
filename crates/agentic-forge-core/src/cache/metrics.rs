@@ -57,7 +57,9 @@ impl CacheMetrics {
 
     pub fn hit_rate(&self) -> f64 {
         let total = self.total_requests();
-        if total == 0 { return 0.0; }
+        if total == 0 {
+            return 0.0;
+        }
         self.hits() as f64 / total as f64
     }
 

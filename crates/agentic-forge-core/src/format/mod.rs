@@ -3,7 +3,7 @@
 use crate::storage::format::{ForgeFooter, ForgeHeader};
 use crate::types::blueprint::Blueprint;
 use crate::types::{ForgeError, ForgeResult, FORGE_MAGIC};
-use std::io::{Read, Write};
+use std::io::Write;
 use std::path::Path;
 
 pub struct ForgeWriter;
@@ -36,7 +36,8 @@ impl ForgeWriter {
         header.write_to(&mut file)?;
         file.write_all(&data)?;
 
-        let total = crate::types::HEADER_SIZE as u64 + data.len() as u64 + crate::types::FOOTER_SIZE as u64;
+        let total =
+            crate::types::HEADER_SIZE as u64 + data.len() as u64 + crate::types::FOOTER_SIZE as u64;
         let footer = ForgeFooter::new(total, 1);
         footer.write_to(&mut file)?;
 
@@ -53,7 +54,8 @@ impl ForgeWriter {
         let mut buf = Vec::new();
         header.write_to(&mut buf)?;
         buf.extend_from_slice(&data);
-        let total = crate::types::HEADER_SIZE as u64 + data.len() as u64 + crate::types::FOOTER_SIZE as u64;
+        let total =
+            crate::types::HEADER_SIZE as u64 + data.len() as u64 + crate::types::FOOTER_SIZE as u64;
         let footer = ForgeFooter::new(total, 1);
         footer.write_to(&mut buf)?;
         Ok(buf)

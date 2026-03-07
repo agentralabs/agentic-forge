@@ -1,10 +1,10 @@
 //! Phase 2: MCP protocol handler tests.
 
-use std::sync::Arc;
-use tokio::sync::Mutex;
-use serde_json::json;
 use agentic_forge_mcp::protocol::ProtocolHandler;
 use agentic_forge_mcp::session::SessionManager;
+use serde_json::json;
+use std::sync::Arc;
+use tokio::sync::Mutex;
 
 fn create_handler() -> ProtocolHandler {
     let session = Arc::new(Mutex::new(SessionManager::new()));
