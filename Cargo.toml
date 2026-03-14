@@ -15,10 +15,10 @@ repository = "https://github.com/agentralabs/agentic-forge"
 authors = ["Agentra Labs <contact@agentralabs.tech>"]
 
 [workspace.dependencies]
-agentic-forge-core = { path = "crates/agentic-forge-core" }
-agentic-forge-mcp = { path = "crates/agentic-forge-mcp" }
-agentic-forge-cli = { path = "crates/agentic-forge-cli" }
-agentic-forge-ffi = { path = "crates/agentic-forge-ffi" }
+agentic-forge-core = { path = "crates/agentic-forge-core", version = "0.1.0" }
+agentic-forge-mcp = { path = "crates/agentic-forge-mcp", version = "0.1.0" }
+agentic-forge-cli = { path = "crates/agentic-forge-cli", version = "0.1.0" }
+agentic-forge-ffi = { path = "crates/agentic-forge-ffi", version = "0.1.0" }
 agentic-sdk = "0.2"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
