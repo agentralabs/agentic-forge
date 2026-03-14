@@ -321,7 +321,7 @@ mod tests {
         entity.operations.push(op);
         let skeleton = SkeletonGenerator::generate(&entity);
         assert!(skeleton.contains("fn create"));
-        assert!(skeleton.contains("todo!()"));
+assert!(skeleton.contains("Implement blueprint logic here"));
     }
 
     #[test]

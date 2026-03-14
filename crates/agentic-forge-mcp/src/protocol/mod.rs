@@ -1,5 +1,7 @@
 //! MCP protocol handler.
 
+pub mod compact;
+
 use crate::session::SessionManager;
 use crate::tools::registry::ToolRegistry;
 use crate::types::*;
@@ -30,7 +32,7 @@ impl ProtocolHandler {
 
         match method {
             "initialize" => self.handle_initialize(id, params).await,
-            "initialized" => Ok(json!(null)),
+            "initialized" | "notifications/initialized" => Ok(json!(null)),
             "tools/list" => self.handle_tools_list(id).await,
             "tools/call" => self.handle_tools_call(id, params).await,
             "resources/list" => self.handle_resources_list(id).await,
@@ -63,6 +65,15 @@ impl ProtocolHandler {
     }
 
     async fn handle_tools_list(&self, id: RequestId) -> McpResult<Value> {
+        if compact::mcp_tool_surface_is_compact() {
+            let tools = compact::compact_tool_definitions();
+            return Ok(json!({
+                "jsonrpc": "2.0",
+                "id": id,
+                "result": { "tools": tools }
+            }));
+        }
+
         let tools = ToolRegistry::list_tools();
         Ok(json!({
             "jsonrpc": "2.0",
@@ -79,7 +90,16 @@ impl ProtocolHandler {
             .ok_or_else(|| McpError::InvalidParams("missing tool name".into()))?;
         let arguments = params.get("arguments").cloned();
 
-        match ToolRegistry::call(name, arguments, &self.session).await {
+        // Normalize compact facade calls to canonical tool names
+        let (name, arguments) = match compact::normalize_compact_tool_call(
+            name,
+            arguments.clone().unwrap_or_else(|| json!({})),
+        ) {
+            Ok((n, a)) => (n, Some(a)),
+            Err(msg) => return Err(McpError::InvalidParams(msg)),
+        };
+
+        match ToolRegistry::call(&name, arguments, &self.session).await {
             Ok(result) => Ok(json!({
                 "jsonrpc": "2.0",
                 "id": id,
